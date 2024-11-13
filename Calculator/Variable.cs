@@ -39,4 +39,8 @@ public static class Variable
     {
         return variables.ContainsKey(name);
     }
+    public static void ClearVariables() 
+    { 
+        variables.Clear(); 
+    }
 }

@@ -122,6 +122,9 @@ namespace Calculator.Test
     [TestCase("""
       x = x + 1;
     """)]
+    [TestCase("return = 2;")]
+    [TestCase("x = return + 1")]
+    [TestCase("return x = x + 1")]
     public void VariableTestFalse(string input)
     {
       var result = Parser.Parse(input);

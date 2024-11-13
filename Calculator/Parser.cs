@@ -107,6 +107,7 @@ public static class Parser
 
     public static bool Parse(string s)
     {
+        Variable.ClearVariables();
         expression = s;
         curIndex = 0;
         try
@@ -420,5 +421,11 @@ public static class Parser
     public static char GetCurrentChar()
     {
         return expression[curIndex];
+    }
+
+    private static void ClearData()
+    {
+        curIndex = 0;
+        
     }
 }
