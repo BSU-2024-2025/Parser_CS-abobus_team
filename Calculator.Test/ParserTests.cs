@@ -107,6 +107,28 @@ namespace Calculator.Test
         x = 1;
         x = x + 1;
     """)]
+    [TestCase("""
+        x = "str";
+    """)]
+    [TestCase("""
+        x = "str";
+        y = x;
+    """)]
+    [TestCase("""
+        x = "str";
+        y = x;
+        z = x + y;
+    """)]
+    [TestCase("""
+        x = true;
+    """)]
+    [TestCase("""
+        x = false;
+    """)]
+    [TestCase("""
+        x = false;
+        y = x;
+    """)]
     public void VariableTest(string input)
     {
       var result = Parser.Parse(input);
@@ -125,6 +147,40 @@ namespace Calculator.Test
     [TestCase("return = 2;")]
     [TestCase("x = return + 1")]
     [TestCase("return x = x + 1")]
+    [TestCase("""
+        x = "str;
+    """)]
+    [TestCase("""
+        x = str;
+    """)]
+    [TestCase("""
+        x = "str"";
+    """)]
+    [TestCase("""
+        x = "str";
+        y = 1;
+        z = x + y;
+    """)]
+    [TestCase("""
+        x = "str"  + 2;
+        y = 1;
+        z = x + y;
+    """)]
+    [TestCase("""
+        x = "str";
+        y = "str";
+        z = x - y;
+    """)]
+    [TestCase("""
+        x = "str";
+        y = "str";
+        z = x * y;
+    """)]
+    [TestCase("""
+        x = "str";
+        y = "str";
+        z = x / y;
+    """)]
     public void VariableTestFalse(string input)
     {
       var result = Parser.Parse(input);
@@ -164,5 +220,48 @@ namespace Calculator.Test
       var result = Parser.Compile(input);
       return (int?)result;
     }
+
+    [TestCase("""
+          return "str";
+          """, ExpectedResult = "str")]
+    [TestCase("""
+          x = "str";
+          return x;
+          """, ExpectedResult = "str")]
+    [TestCase("""
+          x = "str1";
+          y = "str2";
+          return x + y;
+          """, ExpectedResult = "str1str2")]
+    [TestCase("""
+          x = "str1";
+          y = "str2";
+          return y + x;
+          """, ExpectedResult = "str2str1")]
+    [TestCase("""
+          x = "str1";
+          y = "str2";
+          z = x + y;
+          return y + x + z;
+          """, ExpectedResult = "str2str1str1str2")]
+    [TestCase("""
+          x = true;
+          return x;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          x = false;
+          return x;
+          """, ExpectedResult = false)]
+    [TestCase("""
+          x = false;
+          y = x;
+          return y;
+          """, ExpectedResult = false)]
+    public static object? TestObjectCompile(string input)
+    {
+      var result = Parser.Compile(input);
+      return result;
+    }
+
   }
 }
