@@ -14,7 +14,7 @@ public static class Parser
   private static int curIndex;
   private static object? result = null;
 
-  public static bool IsBinaryOperation(out Operation op)
+  public static bool GetBinaryOperation(out Operation op)
   {
     char s = GetCurrentChar();
     op = 0;
@@ -491,7 +491,7 @@ public static class Parser
     Skip();
     Operation oper = 0;
 
-    if (IsNotEnd() && IsBinaryOperation(out oper))
+    if (IsNotEnd() && GetBinaryOperation(out oper))
     {
       Compiler.ExecuteMany(oper);
       Compiler.PushOperation(oper);
