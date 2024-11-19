@@ -90,6 +90,12 @@ namespace Calculator.Test
       // FHJASFHAI // FHJASFHAI
         1+(-1) ) // hekjsdd sdakajfnsd
       """)]
+    [TestCase("1 > 2")]
+    [TestCase("1 < 2")]
+    [TestCase("1 >= 2")]
+    [TestCase("1 <= 2")]
+    [TestCase("1 <= 2 && 3 <= 4")]
+    [TestCase("12 <= 2 || 33 <= 4")]
     public void TestParseTrue(string input)
     {
       bool result = Parser.ParseExpression(input);
@@ -128,6 +134,10 @@ namespace Calculator.Test
     [TestCase("""
         x = false;
         y = x;
+    """)]
+    [TestCase("""
+        x = false;
+        y = !x;
     """)]
     public void VariableTest(string input)
     {
@@ -180,6 +190,10 @@ namespace Calculator.Test
         x = "str";
         y = "str";
         z = x / y;
+    """)]
+    [TestCase("""
+        x = 23241;
+        y = !x;
     """)]
     public void VariableTestFalse(string input)
     {
@@ -257,6 +271,64 @@ namespace Calculator.Test
           y = x;
           return y;
           """, ExpectedResult = false)]
+    [TestCase("""
+          x = 3;
+          y = 2;
+          return x > y;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          x = 3;
+          y = 2;
+          return x < y;
+          """, ExpectedResult = false)]
+    [TestCase("""
+          x = 3;
+          y = 2;
+          return x >= y;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          x = 2;
+          y = 2;
+          return x >= y;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          x = 2;
+          y = 2;
+          return x <= y;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return 3 >= 3;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return 4 >= 3;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return 4 <= 3;
+          """, ExpectedResult = false)]
+    [TestCase("""
+          return 4 <= 3 && 9 > 1;
+          """, ExpectedResult = false)]
+    [TestCase("""
+          return 4 >= 3 && 9 > 1;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return (4 >= 3) && (9 > 1);
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return 10 > 3 || 9 < 1;
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return (10 > 3) || (9 < 1);
+          """, ExpectedResult = true)]
+    [TestCase("""
+          return 1 > 2 || 4 < 3;
+          """, ExpectedResult = false)]
+    [TestCase("""
+          return (1 > 2) || (4 < 3);
+          """, ExpectedResult = false)]
+    [TestCase("""
+          return (!(1 > 2)) || (!(4 < 3));
+          """, ExpectedResult = true)]
     public static object? TestObjectCompile(string input)
     {
       var result = Parser.Compile(input);

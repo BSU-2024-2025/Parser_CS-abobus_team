@@ -14,15 +14,73 @@ public static class Parser
   private static int curIndex;
   private static object? result = null;
 
-  public static bool IsBinaryOperation(char s)
+  public static bool IsBinaryOperation(out Operation op)
   {
-
-    switch (s)
+    char s = GetCurrentChar();
+    op = 0;
+    if (s == '>')
     {
-      case (char)Operation.Add:
-      case (char)Operation.Subtract:
-      case (char)Operation.Multiply:
-      case (char)Operation.Divide:
+      if (IsNotEnd() && expression[curIndex + 1] == '=')
+      {
+        curIndex += 2;
+        op = Operation.MoreOrEqual;
+        return true;
+      }
+      else
+      {
+        curIndex++;
+        op = (Operation)s;
+        return true;
+      }
+    }
+
+    if (s == '<')
+    {
+      if (IsNotEnd() && expression[curIndex + 1] == '=')
+      {
+        curIndex += 2;
+        op = Operation.LessOrEqual;
+        return true;
+      }
+      else
+      {
+        curIndex++;
+        op = (Operation)s;
+        return true;
+      }
+    }
+
+    if (ParseString("&&"))
+    {
+      op = Operation.LogicalAnd; return true;
+    }
+    if (ParseString("||"))
+    {
+      op = Operation.LogicalOr; return true;
+    }
+
+    switch ((Operation)s)
+    {
+      case Operation.Add:
+      case Operation.Subtract:
+      case Operation.Multiply:
+      case Operation.Divide:
+      case Operation.MoreThan: 
+      case Operation.LessThan:
+        op = (Operation)s;
+        curIndex++;
+        return true;
+      case Operation.Negation:
+        if (IsNotEnd() && expression[curIndex + 1] == '=')
+        {
+          curIndex += 2;
+          // TODO Add "!="
+        }
+        else
+        {
+          op = (Operation)s;
+        }
+        curIndex++;
         return true;
       default:
         return false;
@@ -51,6 +109,7 @@ public static class Parser
     {
       case (char)Operation.Add:
       case (char)Operation.Subtract:
+      case (char)Operation.Negation:
         return true;
       default:
         return false;
@@ -254,7 +313,7 @@ public static class Parser
       }
     }
 
-    Compiler.ExecuteMany((char)Operation.End);
+    Compiler.ExecuteMany(Operation.End);
     return true;
   }
 
@@ -430,12 +489,13 @@ public static class Parser
   public static bool ParseBinary()
   {
     Skip();
+    Operation oper = 0;
 
-    if (IsNotEnd() && IsBinaryOperation(GetCurrentChar()))
+    if (IsNotEnd() && IsBinaryOperation(out oper))
     {
-      Compiler.ExecuteMany(GetCurrentChar());
-      Compiler.PushOperation(GetCurrentChar());
-      curIndex++;
+      Compiler.ExecuteMany(oper);
+      Compiler.PushOperation(oper);
+      //curIndex++;
       return true;
     }
 
@@ -478,6 +538,10 @@ public static class Parser
       if (GetCurrentChar() == (char)Operation.Subtract)
       {
         Compiler.PushOperation(Operation.UnaryMinus);
+      }
+      else if (GetCurrentChar() == (char)Operation.Negation)
+      {
+        Compiler.PushOperation(Operation.Negation);
       }
       curIndex++;
     }

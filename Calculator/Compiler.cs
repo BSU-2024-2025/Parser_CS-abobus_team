@@ -87,7 +87,6 @@ public static class Compiler
           }
           break;
         }
-
       case Operation.Subtract:
         PushNumber(-(int?)PopNumber() + (int?)PopNumber());
         break;
@@ -100,42 +99,99 @@ public static class Compiler
       case Operation.UnaryMinus:
         PushNumber(-(int?)PopNumber());
         break;
+      case Operation.Negation:
+        {
+          var operand = PopNumber();
+
+          if (operand is bool)
+          {
+            var res = !(bool)operand;
+            PushNumber(!(bool)operand);
+          }
+          else
+          {
+            throw new InvalidOperationException("Unsupported operand types");
+          }
+          break;
+        }
+      case Operation.MoreThan:
+        {
+          var operand2 = PopNumber();
+          var operand1 = PopNumber();
+          PushNumber((int?)operand1 > (int?)operand2);
+          break;
+        }
+      case Operation.MoreOrEqual:
+        {
+          var operand2 = PopNumber();
+          var operand1 = PopNumber();
+          PushNumber((int?)operand1 >= (int?)operand2);
+          break;
+        }
+      case Operation.LessThan:
+        {
+          var operand2 = PopNumber();
+          var operand1 = PopNumber();
+          PushNumber((int?)operand1 < (int?)operand2);
+          break;
+        }
+      case Operation.LessOrEqual:
+        {
+          var operand2 = PopNumber();
+          var operand1 = PopNumber();
+          PushNumber((int?)operand1 <= (int?)operand2);
+          break;
+        }
+      case Operation.LogicalAnd:
+        {
+          var operand2 = PopNumber();
+          var operand1 = PopNumber();
+          if (operand1 is bool && operand2 is bool)
+          {
+            PushNumber((bool)operand1 && (bool)operand2);
+          }
+          break;
+        }
+      case Operation.LogicalOr:
+        {
+          var operand2 = PopNumber();
+          var operand1 = PopNumber();
+          if (operand1 is bool && operand2 is bool)
+          {
+            PushNumber((bool)operand1 || (bool)operand2);
+          }
+          break;
+        }
       default:
         break;
 
     }
   }
 
-  public static int GetPriority(char op)
-  {
-    switch (op)
-    {
-      case (char)Operation.Add:
-      case (char)Operation.Subtract:
-        return 1;
-      case (char)Operation.Multiply:
-      case (char)Operation.Divide:
-        return 3;
-      case (char)Operation.LeftBracket:
-        return 0;
-      case (char)Operation.End:
-        return 0;
-      default:
-        return 0;
-    }
-  }
+
 
   public static int GetPriority(Operation op)
   {
     switch (op)
     {
-      case Operation.Add:
-      case Operation.Subtract:
-        return 1;
+      case Operation.Negation:
+      case Operation.UnaryMinus:
+        return 400;
       case Operation.Multiply:
       case Operation.Divide:
-      case Operation.UnaryMinus:
-        return 3;
+        return 300;
+      case Operation.Add:
+      case Operation.Subtract:
+        return 100;
+      case Operation.MoreThan:
+      case Operation.MoreOrEqual:
+      case Operation.LessThan:
+      case Operation.LessOrEqual:
+        return 50;
+      case Operation.LogicalAnd:
+        return 40;
+      case Operation.LogicalOr:
+        return 20;
       case Operation.LeftBracket:
         return 0;
       case Operation.End:
@@ -149,9 +205,9 @@ public static class Compiler
   {
     return operations.Peek();
   }
-  public static void ExecuteMany(char s)
+  public static void ExecuteMany(Operation oper)
   {
-    int currentPriority = GetPriority(s);
+    int currentPriority = GetPriority(oper);
     while (operations.Count > 0 && currentPriority < GetPriority(PeekOperation()))
     {
       Execute(PopOperation());
@@ -167,4 +223,40 @@ public static class Compiler
       a = PopOperation();
     }
   }
+
+  public static bool IsFalseable(this object value)
+  {
+    return value is sbyte
+            || value is byte
+            || value is short
+            || value is ushort
+            || value is int
+            || value is uint
+            || value is long
+            || value is ulong
+            || value is float
+            || value is double
+            || value is decimal;
+  }
 }
+
+//public static int GetPriority(char op)
+//{
+//  switch (op)
+//  {
+//    case (char)Operation.Add:
+//    case (char)Operation.Subtract:
+//      return 100;
+//    case (char)Operation.Multiply:
+//    case (char)Operation.Divide:
+//      return 300;
+//    case (char)Operation.LeftBracket:
+//      return 0;
+//    case (char)Operation.End:
+//      return 0;
+//    case (char)Operation.Negation:
+//      return 10;
+//    default:
+//      return 0;
+//  }
+//}
