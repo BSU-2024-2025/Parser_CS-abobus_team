@@ -7,14 +7,18 @@ public static class Parser
 
   public static void Main()
   {
-    Console.WriteLine(Parser.Parse("1+2"));
+    //Console.WriteLine(Parser.Parse("1+2"));
+    //Console.WriteLine(Parser.Parse("return;"));
+    //Console.WriteLine(Parser.Parse("return 1;"));
+    Console.WriteLine(Parser.Parse("return 1 + 2;"));
   }
 
   private static string expression = "";
   private static int curIndex;
   private static object? result = null;
+  private static CmdList CmdList = new CmdList();
 
-  public static bool IsBinaryOperation(out Operation op)
+  public static bool GetBinaryOperation(out Operation op)
   {
     char s = GetCurrentChar();
     op = 0;
@@ -103,13 +107,15 @@ public static class Parser
     }
   }
 
-  public static bool IsUnaryOperation(char s)
+  public static bool GetUnaryOperation(char s, out Operation op)
   {
+    op = 0;
     switch (s)
     {
       case (char)Operation.Add:
       case (char)Operation.Subtract:
       case (char)Operation.Negation:
+        op = (Operation)s;
         return true;
       default:
         return false;
@@ -167,6 +173,7 @@ public static class Parser
   public static bool Parse(string s)
   {
     Variable.ClearVariables();
+    CmdList.Clear();
     expression = s;
     curIndex = 0;
     try
@@ -241,8 +248,10 @@ public static class Parser
       throw new ParserException("Error");
     }
 
-    Variable.AddVariable(name);
-    Variable.SetVariable(name, Compiler.GetResult());
+    //Variable.AddVariable(name);
+    //Variable.SetVariable(name, Compiler.GetResult());
+    CmdList.AddVar(curIndex, name);
+    CmdList.AddAssign(curIndex, Operation.Assign);
 
     return true;
   }
@@ -257,6 +266,7 @@ public static class Parser
     if (ParseChar(';'))
     {
       result = 0;
+      CmdList.AddReturn(curIndex);
       return true;
     }
 
@@ -266,8 +276,9 @@ public static class Parser
     {
       throw new ParserException("Error");
     }
+    CmdList.AddReturn(curIndex);
 
-    result = Compiler.GetResult();
+    //result = Compiler.GetResult();
     return true;
   }
 
@@ -313,7 +324,9 @@ public static class Parser
       }
     }
 
-    Compiler.ExecuteMany(Operation.End);
+    //Compiler.ExecuteMany(Operation.End);
+
+    CmdList.AddEndExpr(curIndex);
     return true;
   }
 
@@ -323,7 +336,8 @@ public static class Parser
     {
       if (num != null)
       {
-        Compiler.PushNumber(num);
+        //Compiler.PushNumber(num);
+        CmdList.AddConst(curIndex, num);
       }
       return true;
     }
@@ -331,7 +345,8 @@ public static class Parser
     {
       if (str != null)
       {
-        Compiler.PushData(str);
+        //Compiler.PushData(str);
+        CmdList.AddConst(curIndex, str);
       }
       return true;
     }
@@ -339,7 +354,8 @@ public static class Parser
     {
       if (boolean != null)
       {
-        Compiler.PushData(boolean);
+        //Compiler.PushData(boolean);
+        CmdList.AddConst(curIndex, boolean);
       }
       return true;
     }
@@ -353,11 +369,13 @@ public static class Parser
 
     if (ParseChar((char)Operation.LeftBracket))
     {
-      Compiler.PushOperation(Operation.LeftBracket);
+      //Compiler.PushOperation(Operation.LeftBracket);
+      CmdList.AddOperation(curIndex, Operation.LeftBracket);
       ParseExpr();
       if (ParseChar((char)Operation.RightBracket))
       {
-        Compiler.ExecuteParanthesis();
+        //Compiler.ExecuteParanthesis();
+        CmdList.AddOperation(curIndex, Operation.RightBracket);
         return true;
       }
 
@@ -380,7 +398,8 @@ public static class Parser
       throw new ParserException($"Variable not found: {name}");
     }
 
-    Compiler.PushNumber(Variable.GetVariable(name));
+    //Compiler.PushNumber(Variable.GetVariable(name));
+    CmdList.AddVar(curIndex, name);
 
     return true;
   }
@@ -491,11 +510,12 @@ public static class Parser
     Skip();
     Operation oper = 0;
 
-    if (IsNotEnd() && IsBinaryOperation(out oper))
+    if (IsNotEnd() && GetBinaryOperation(out oper))
     {
-      Compiler.ExecuteMany(oper);
-      Compiler.PushOperation(oper);
+      //Compiler.ExecuteMany(oper);
+      //Compiler.PushOperation(oper);
       //curIndex++;
+      CmdList.AddOperation(curIndex, oper);
       return true;
     }
 
@@ -532,17 +552,19 @@ public static class Parser
   public static void ParseUnary()
   {
     Skip();
+    Operation oper = 0;
 
-    if (IsNotEnd() && IsUnaryOperation(GetCurrentChar()))
+    if (IsNotEnd() && GetUnaryOperation(GetCurrentChar(), out oper))
     {
-      if (GetCurrentChar() == (char)Operation.Subtract)
-      {
-        Compiler.PushOperation(Operation.UnaryMinus);
-      }
-      else if (GetCurrentChar() == (char)Operation.Negation)
-      {
-        Compiler.PushOperation(Operation.Negation);
-      }
+      CmdList.AddOperation(curIndex, oper);
+      //if (GetCurrentChar() == (char)Operation.Subtract)
+      //{
+      //  Compiler.PushOperation(Operation.UnaryMinus);
+      //}
+      //else if (GetCurrentChar() == (char)Operation.Negation)
+      //{
+      //  Compiler.PushOperation(Operation.Negation);
+      //}
       curIndex++;
     }
   }
