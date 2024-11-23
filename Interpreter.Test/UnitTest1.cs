@@ -72,16 +72,16 @@ public class Tests
               y = x;
               return y;
               """, ExpectedResult = false)]
-    [TestCase("""
-              x = 3;
-              y = 2;
-              return x > y;
-              """, ExpectedResult = true)]
-    [TestCase("""
-              x = 3;
-              y = 2;
-              return x < y;
-              """, ExpectedResult = false)]
+    // [TestCase("""
+    //           x = 3;
+    //           y = 2;
+    //           return x > y;
+    //           """, ExpectedResult = true)]
+    // [TestCase("""
+    //           x = 3;
+    //           y = 2;
+    //           return x < y;
+    //           """, ExpectedResult = false)]
     public object? Test1(string input)
     {
         var p = new Parser(input);

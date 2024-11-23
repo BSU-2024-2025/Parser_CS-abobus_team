@@ -117,7 +117,7 @@ public partial class Parser(string input)
 
         if (ParseString(out var str))
         {
-            if (num != str) _commandList.AddConstant(_currentIndex, str);
+            if (str != null) _commandList.AddConstant(_currentIndex, str);
             return true;
         }
 
@@ -180,7 +180,6 @@ public partial class Parser(string input)
         if (IsNotEnd() && ParseStringLiteral("\""))
         {
             o = string.Empty;
-            _currentIndex++;
         }
         else
         {
@@ -192,7 +191,6 @@ public partial class Parser(string input)
         {
             if (ParseStringLiteral("\""))
             {
-                _currentIndex++;
                 break;
             }
 
