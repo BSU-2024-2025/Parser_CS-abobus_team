@@ -7,7 +7,7 @@ public class Compiler(List<Command> commands)
 	private readonly Stack<object?> _data = new();
 	private readonly Dictionary<string, object?> _variables = new();
 
-	public object Compile()
+	public object? Compile()
 	{
 		foreach (var command in _commands)
 		{
@@ -72,7 +72,8 @@ public class Compiler(List<Command> commands)
 					break;
 			}
 		}
-		return _data.Peek() ?? 0;
+
+		return null;
 	}
 	
 	private void Execute(string operation)
@@ -196,8 +197,6 @@ public class Compiler(List<Command> commands)
 				}
 				break;
 			}
-			default:
-				break;
 		}
 	}
 

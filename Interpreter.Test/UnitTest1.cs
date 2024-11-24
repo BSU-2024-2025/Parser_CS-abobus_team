@@ -66,6 +66,21 @@ public class Tests
               return x;
               """, ExpectedResult = true)]
     [TestCase("""
+              x = true;
+              return !x;
+              """, ExpectedResult = false)]
+    [TestCase("""
+              x = false;
+              return !x;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              x = -(-(-1));
+              return x;
+              """, ExpectedResult = -1)]
+    [TestCase("""
+              x = true;
+              """, ExpectedResult = null)]
+    [TestCase("""
               x = false;
               return x;
               """, ExpectedResult = false)]
@@ -135,10 +150,11 @@ public class Tests
     [TestCase("""
               return (1+2);
               """, ExpectedResult = 3)]
-    public object? Test1(string input)
+    public object? TestCompiler(string input)
     {
         var p = new Parser(input);
         var c = new Compiler(p.Parse());
         return c.Compile();
     }
+    
 }

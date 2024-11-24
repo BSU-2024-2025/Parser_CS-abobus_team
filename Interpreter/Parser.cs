@@ -19,6 +19,18 @@ public partial class Parser(string input)
         return _commandList.GetCommands();
     }
 
+    public List<Command> Parse(out bool success)
+    {
+        success = ParseOperators();
+        if (IsNotEnd())
+        {
+            success = false;
+        }
+        return _commandList.GetCommands();
+    }
+    
+    
+
     private bool ParseOperators()
     {
         while (IsNotEnd())
