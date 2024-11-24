@@ -39,18 +39,18 @@ public class Compiler(List<Command> commands)
 				{
 					if (command.Value != null)
 					{
-						if (command.Value.Equals("("))
+						switch ((string)command.Value)
 						{
-							PushOperator((string)command.Value);
-						}
-						if (command.Value.Equals(")"))
-						{
-							ExecuteParenthesis();
-						}
-						else
-						{
-							ExecuteOperators((string)command.Value);
-							PushOperator((string)command.Value);
+							case "(":
+								PushOperator("(");
+								break;
+							case ")":
+								ExecuteParenthesis();
+								break;
+							default:
+								ExecuteOperators((string)command.Value);
+								PushOperator((string)command.Value);
+								break;
 						}
 					}
 					break;

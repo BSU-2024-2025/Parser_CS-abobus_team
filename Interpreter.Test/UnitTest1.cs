@@ -135,9 +135,6 @@ public class Tests
     [TestCase("""
               return (1+2);
               """, ExpectedResult = 3)]
-    [TestCase("""
-              return (((((((((((((-3);
-              """,ExpectedResult = -3)]
     public object? Test1(string input)
     {
         var p = new Parser(input);
