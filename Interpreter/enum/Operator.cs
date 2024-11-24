@@ -23,38 +23,30 @@ public static class Operator
     public const string RightParenthesis = ")";
     public const string End = "\n";
 
-    public static bool IsBinaryOperatorOneChar(string op, out string str)
+    public static bool IsBinaryOperator(string op, out string str)
     {
-        switch (op)
+        switch (op[0].ToString())
         {
-            //or MoreThan or LessThan
-            // or GreaterThanOrEqual or LessThanOrEqual
-            // TODO MAKE THIS
             case Add or Subtract or Multiply or Divide or Modulo:
+                str = op[0].ToString();
+                return true;
+            case MoreThan or LessThan when op[1].ToString().Equals("="):
                 str = op;
                 return true;
-            default:
-                str = Empty;
-                return false;
+            case MoreThan or LessThan when !op[1].ToString().Equals("="):
+                str = op[0].ToString();
+                return true;
         }
+        switch (op)
+        {
+            case Equal or NotEqual or And or Or:
+                str = op;
+                return true;
+        }
+        str = Empty;
+        return false;
     }
     
-    public static bool IsBinaryOperatorManyChar(string op, out string str)
-    {
-        switch (op)
-        {
-            //or MoreThan or LessThan
-            // or GreaterThanOrEqual or LessThanOrEqual
-            // TODO MAKE THIS
-            case Equal or NotEqual or Add or Or:
-                str = op;
-                return true;
-            default:
-                str = Empty;
-                return false;
-        }
-    } 
-
     public static bool IsUnaryOperator(string op, out string str)
     {
         switch (op)

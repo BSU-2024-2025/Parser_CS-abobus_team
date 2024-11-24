@@ -5,9 +5,8 @@ public class Program
     public static void Main(string[] args)
     {
         var a = InitParser("""
-                           x = 1 + 2;
-                           return x + 1;
-                           """);
+                           return (10 > 3) || (9 < 1);
+                        """);
         // var a = InitParser("x = 1 + 2;" +
         //                    "y = 1+x;" +
         //                    "return y +x;");

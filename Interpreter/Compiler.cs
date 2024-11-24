@@ -11,6 +11,7 @@ public class Compiler(List<Command> commands)
 	{
 		foreach (var command in _commands)
 		{
+			Console.WriteLine(command.CommandType + "----" + command.Value);
 			switch (command.CommandType)
 			{
 				case CommandType.Constant:
@@ -28,12 +29,20 @@ public class Compiler(List<Command> commands)
 							PushData(variable);
 						}
 					}
+					else
+					{
+						throw new Exception($"Variable '{command.Value}' is not defined.");
+					}
 					break;
 				}
 				case CommandType.Operator:
 				{
 					if (command.Value != null)
 					{
+						if (command.Value.Equals("("))
+						{
+							PushOperator((string)command.Value);
+						}
 						if (command.Value.Equals(")"))
 						{
 							ExecuteParenthesis();
@@ -53,6 +62,10 @@ public class Compiler(List<Command> commands)
 					SetVariable((string)command.Value!,PopData());
 					break;
 				case CommandType.Return:
+					if (GetOperatorsLength() != 0)
+					{
+						throw new Exception($"Not empty operators stack.");
+					}
 					return (GetDataLength() != 0  ? PeekData() : 0) ?? 0;
 				case CommandType.EndExpression:
 					ExecuteOperators(Operator.End);
@@ -106,7 +119,7 @@ public class Compiler(List<Command> commands)
 				PushData(1/(int?)PopData()! * (int?)PopData()!);
 				break;
 			case Operator.UnaryMinus:
-				PushData(-(decimal?)PopData()!);
+				PushData(-(int?)PopData()!);
 				break;
 			case Operator.Not:
 			{
@@ -123,63 +136,63 @@ public class Compiler(List<Command> commands)
 			{
 				var operand = PopData();
 				var operand2 = PopData();
-				PushData((int?)operand > (int?)operand2);
+				PushData((int?)operand < (int?)operand2);
 				break;
 			}
 			case Operator.LessThan:
 			{
-				var operand = PopData();
+				var operand1 = PopData();
 				var operand2 = PopData();
-				PushData((int?)operand > (int?)operand2);
+				PushData((int?)operand1 > (int?)operand2);
 				break;
 			}
 			case Operator.GreaterThanOrEqual:
 			{
-				var operand = PopData();
+				var operand1 = PopData();
 				var operand2 = PopData();
-				PushData((int?)operand >= (int?)operand2);
+				PushData((int?)operand1 <= (int?)operand2);
 				break;
 			}
 			case Operator.LessThanOrEqual:
 			{
-				var operand = PopData();
+				var operand1 = PopData();
 				var operand2 = PopData();
-				PushData((int?)operand <= (int?)operand2);
+				PushData((int?)operand1 >= (int?)operand2);
 				break;
 			}
 			case Operator.Equal:
 			{
-				var operand = PopData()!;
+				var operand1 = PopData()!;
 				var operand2 = PopData();
-				var res = operand == operand2 || operand.Equals(operand2);
+				var res = operand1 == operand2 || operand1.Equals(operand2);
 				PushData(res);
 				break;
 			}
 			case Operator.And:
 			{
-				var operand = PopData();
+				var operand1 = PopData();
 				var operand2 = PopData();
-				if (operand is bool && operand2 is bool)
+				if (operand1 is bool && operand2 is bool)
 				{
-					PushData((bool)operand && (bool)operand2);
+					PushData((bool)operand2 && (bool)operand1);
 				}
 				break;
 			}
 			case Operator.NotEqual:
 			{
-				var operand = PopData()!;
+				var operand1 = PopData()!;
 				var operand2 = PopData();
-				var res = operand != operand2 || !operand.Equals(operand2);
+				var res = operand1 != operand2 || !operand1.Equals(operand2);
 				PushData(res);
 				break;
 			}
 			case Operator.Or:
 			{
-				var operand = PopData();
+				var operand1 = PopData();
 				var operand2 = PopData();
-				if (operand is bool && operand2 is bool)
+				if (operand1 is bool && operand2 is bool)
 				{
-					PushData((bool)operand || (bool)operand2);
+					PushData((bool)operand2 || (bool)operand1);
 				}
 				break;
 			}
@@ -191,11 +204,12 @@ public class Compiler(List<Command> commands)
 	private void ExecuteParenthesis()
 	{
 		var cur = PopOperator();
-		while (cur.Equals(Operator.LeftParenthesis))
+		while (!cur.Equals(Operator.LeftParenthesis))
 		{
 			Execute(cur);
 			cur = PopOperator();
 		}
+		
 	}
 
 	private void ExecuteOperators(string operation)

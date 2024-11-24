@@ -1,3 +1,5 @@
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+
 namespace Interpreter.Test;
 
 public class Tests
@@ -72,16 +74,70 @@ public class Tests
               y = x;
               return y;
               """, ExpectedResult = false)]
-    // [TestCase("""
-    //           x = 3;
-    //           y = 2;
-    //           return x > y;
-    //           """, ExpectedResult = true)]
-    // [TestCase("""
-    //           x = 3;
-    //           y = 2;
-    //           return x < y;
-    //           """, ExpectedResult = false)]
+    [TestCase("""
+              x = 3;
+              y = 2;
+              return x > y;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              x = 3;
+              y = 2;
+              return x < y;
+              """, ExpectedResult = false)]
+    [TestCase("""
+              x = 3;
+              y = 2;
+              return x >= y;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              x = 2;
+              y = 2;
+              return x >= y;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              x = 2;
+              y = 2;
+              return x <= y;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return 3 >= 3;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return 4 >= 3;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return 4 <= 3;
+              """, ExpectedResult = false)]
+    [TestCase("""
+              return 4 <= 3 && 9 > 1;
+              """, ExpectedResult = false)]
+    [TestCase("""
+              return 4 >= 3 && 9 > 1;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return (4 >= 3) && (9 > 1);
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return 10 > 3 || 9 < 1;
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return (10 > 3) || (9 < 1);
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return 1 > 2 || 4 < 3;
+              """, ExpectedResult = false)]
+    [TestCase("""
+              return (1 > 2) || (4 < 3);
+              """, ExpectedResult = false)]
+    [TestCase("""
+              return (!(1 > 2)) || (!(4 < 3));
+              """, ExpectedResult = true)]
+    [TestCase("""
+              return (1+2);
+              """, ExpectedResult = 3)]
+    [TestCase("""
+              return (((((((((((((-3);
+              """,ExpectedResult = -3)]
     public object? Test1(string input)
     {
         var p = new Parser(input);

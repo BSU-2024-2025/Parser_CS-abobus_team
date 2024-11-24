@@ -7,6 +7,7 @@ public class CommandList
     {
         Add(index, CommandType.Operator, value);
     }
+    
     public void AddEndExpression(int index)
     {
         Add(index, CommandType.EndExpression);

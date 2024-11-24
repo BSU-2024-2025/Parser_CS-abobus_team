@@ -40,6 +40,7 @@ public partial class Parser(string input)
         if (!ParseStringLiteral("=")) return false;
 
         ParseExpression();
+        _commandList.AddEndExpression(_currentIndex);
 
         if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
 
@@ -78,6 +79,7 @@ public partial class Parser(string input)
         ParseExpression();
 
         if (!ParseStringLiteral(";")) throw new Exception($"Unexpected end of input: {GetCurrentChar()}");
+        _commandList.AddEndExpression(_currentIndex);
         _commandList.AddReturn(_currentIndex);
 
         return true;
@@ -91,7 +93,6 @@ public partial class Parser(string input)
         while (ParseBinary())
             if (!ParseOperand())
                 return false;
-        _commandList.AddEndExpression(_currentIndex);
         return true;
     }
 
@@ -221,15 +222,10 @@ public partial class Parser(string input)
 
     private bool GetBinaryOperator(out string op)
     {
-        if (IsNotEnd() && 
-            Operator.IsBinaryOperatorOneChar(input.Substring(_currentIndex, 1), out op))
-        {
-            _currentIndex += op.Length;
-            return true;
-        }
+        Skip();
         
         if (IsNotEnd() && _currentIndex + 1 < input.Length &&
-            Operator.IsBinaryOperatorManyChar(input.Substring(_currentIndex, 2), out op))
+            Operator.IsBinaryOperator(input.Substring(_currentIndex, 2), out op))
         {
             _currentIndex += op.Length;
             return true;
