@@ -8,6 +8,7 @@ public enum CommandType
     Assign,
     Variable,
     ConstVariable,
-    EndText,
-    Return
+    Return,
+    If,
+    Else,
 }

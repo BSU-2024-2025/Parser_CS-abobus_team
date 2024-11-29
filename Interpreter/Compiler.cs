@@ -9,9 +9,9 @@ public class Compiler(List<Command> commands)
 
 	public object? Compile()
 	{
-		foreach (var command in _commands)
+		for (var i = 0; i < _commands.Count; i++)
 		{
-			Console.WriteLine(command.CommandType + "----" + command.Value);
+			var command = _commands[i];
 			switch (command.CommandType)
 			{
 				case CommandType.Constant:
@@ -33,6 +33,7 @@ public class Compiler(List<Command> commands)
 					{
 						throw new Exception($"Variable '{command.Value}' is not defined.");
 					}
+
 					break;
 				}
 				case CommandType.Operator:
@@ -53,22 +54,39 @@ public class Compiler(List<Command> commands)
 								break;
 						}
 					}
+
 					break;
 				}
 				case CommandType.Variable:
 					AddVariable((string)command.Value!);
 					break;
 				case CommandType.Assign:
-					SetVariable((string)command.Value!,PopData());
+					SetVariable((string)command.Value!, PopData());
 					break;
 				case CommandType.Return:
 					if (GetOperatorsLength() != 0)
 					{
 						throw new Exception($"Not empty operators stack.");
 					}
-					return (GetDataLength() != 0  ? PeekData() : 0) ?? 0;
+
+					return (GetDataLength() != 0 ? PeekData() : 0) ?? 0;
 				case CommandType.EndExpression:
 					ExecuteOperators(Operator.End);
+					break;
+				case CommandType.If:
+					// if (GetDataLength() == 0)
+					// {
+					// 	break;
+					// }
+					// if (!(bool)PopData()!)
+					// {
+					// 	i = (int)command.Value! - 1;
+					// }
+					// else
+					// {
+					// 	var cmd = (int)_commands[(int)command.Value!].Value!;
+					// 	_commands.RemoveRange((int)command.Value!, cmd - (int)command.Value! + 1);
+					// }
 					break;
 			}
 		}

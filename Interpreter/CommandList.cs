@@ -3,11 +3,28 @@ namespace Interpreter;
 public class CommandList
 {
     private readonly List<Command> _commands = [];
+    
+    public int GetCommandCount() => _commands.Count;
     public void AddOperator(int index, object value)
     {
         Add(index, CommandType.Operator, value);
     }
+
+    public void AddIf(int index, out Command command)
+    {
+        command = new Command(index, CommandType.If);
+        Add(command);
+    }
     
+    public void AddElse(int index, out Command command)
+    {
+        command = new Command(index, CommandType.Else);
+        Add(command);
+    }
+    private void Add(Command command)
+    {
+        _commands.Add(command);
+    }
     public void AddEndExpression(int index)
     {
         Add(index, CommandType.EndExpression);

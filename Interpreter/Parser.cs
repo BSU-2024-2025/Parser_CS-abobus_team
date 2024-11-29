@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic.CompilerServices;
 
@@ -36,7 +37,10 @@ public partial class Parser(string input)
         while (IsNotEnd())
         {
             if (ParseReturn()) return true;
-
+            if (ParseIf())
+            {
+                continue;
+            }
             ParseAssign();
         }
 
@@ -94,6 +98,44 @@ public partial class Parser(string input)
         _commandList.AddEndExpression(_currentIndex);
         _commandList.AddReturn(_currentIndex);
 
+        return true;
+    }
+
+
+    private bool ParseIf()
+    {
+        if (!ParseStringLiteral("if")) return false;
+        
+        ParseExpression();
+        
+        if(!ParseStringLiteral("{")) throw new Exception($"Unexpected end of input: {GetCurrentChar()}");
+        _commandList.AddEndExpression(_currentIndex);
+        _commandList.AddIf(_currentIndex, out var command1);
+        while (!ParseStringLiteral("}") && IsNotEnd())
+        {
+            if (ParseReturn()) break;
+            if(ParseIf()) break;
+            ParseAssign();
+        }
+        command1.Value = _commandList.GetCommandCount();
+        if (ParseStringLiteral("else"))
+        {
+            if (!ParseIf())
+            {
+                if (!ParseStringLiteral("{"))
+                {
+                    throw new Exception($"Unexpected end of input: {GetCurrentChar()}");
+                }
+                _commandList.AddIf(_currentIndex, out var command);
+                while (!ParseStringLiteral("}") && IsNotEnd())
+                {
+                    if (ParseReturn()) break;
+                    if(ParseIf()) break;
+                    ParseAssign();
+                }
+                command.Value = _commandList.GetCommandCount() - 1;
+            }
+        }
         return true;
     }
 
@@ -280,23 +322,6 @@ public partial class Parser(string input)
                 Skip();
             }
         }
-        // while (true)
-        // {
-        //     while (IsNotEnd() && IsSymbol()) _currentIndex++;
-        //
-        //     if (_currentIndex < input.Length - 1 && input.Substring(_currentIndex, 2).Equals(@"//"))
-        //     {
-        //         _currentIndex += 2;
-        //         while (IsNotEnd() && GetCurrentChar() != '\n') _currentIndex++;
-        //         if (IsNotEnd())
-        //         {
-        //             _currentIndex++;
-        //             continue;
-        //         }
-        //     }
-        //
-        //     break;
-        // }
     }
 
     private bool IsSymbol()

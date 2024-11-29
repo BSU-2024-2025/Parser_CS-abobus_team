@@ -150,6 +150,24 @@ public class Tests
     [TestCase("""
               return (1+2);
               """, ExpectedResult = 3)]
+    [TestCase("""
+              x = 1;
+              if(1 > 2)
+              {
+                x = 3;
+              }
+              return x;
+              """, ExpectedResult = 1)]
+    [TestCase("""
+              y = 1;
+              x = 0;
+              if (y == 2){
+               x = 3;
+              else{
+              x = 5;
+              }
+              return x;
+              """, ExpectedResult = 5)]
     public object? TestCompiler(string input)
     {
         var p = new Parser(input);
