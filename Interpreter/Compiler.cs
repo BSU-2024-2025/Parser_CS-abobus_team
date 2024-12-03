@@ -2,16 +2,16 @@ namespace Interpreter;
 
 public class Compiler(List<Command> commands)
 {
-	private readonly List<Command> _commands = commands;
-	private readonly Stack<string> _operations = new();
-	private readonly Stack<object?> _data = new();
-	private readonly Dictionary<string, object?> _variables = new();
+	private readonly List<Command> commands = commands;
+	private readonly Stack<string> operations = new();
+	private readonly Stack<object?> data = new();
+	private readonly Dictionary<string, object?> variables = new();
 
 	public object? Compile()
 	{
-		for (var i = 0; i < _commands.Count; i++)
+		for (var i = 0; i < commands.Count; i++)
 		{
-			var command = _commands[i];
+			var command = commands[i];
 			switch (command.CommandType)
 			{
 				case CommandType.Constant:
@@ -74,20 +74,14 @@ public class Compiler(List<Command> commands)
 					ExecuteOperators(Operator.End);
 					break;
 				case CommandType.If:
-					// if (GetDataLength() == 0)
-					// {
-					// 	break;
-					// }
-					// if (!(bool)PopData()!)
-					// {
-					// 	i = (int)command.Value! - 1;
-					// }
-					// else
-					// {
-					// 	var cmd = (int)_commands[(int)command.Value!].Value!;
-					// 	_commands.RemoveRange((int)command.Value!, cmd - (int)command.Value! + 1);
-					// }
+					if (!(bool)PopData()!)
+					{
+						i = (int)command.Value! - 1; // increment in for
+					}
 					break;
+				case CommandType.Jump:
+					i = (int)command.Value! - 1; // increment in for
+          break;
 			}
 		}
 
@@ -183,7 +177,7 @@ public class Compiler(List<Command> commands)
 			{
 				var operand1 = PopData()!;
 				var operand2 = PopData();
-				var res = operand1 == operand2 || operand1.Equals(operand2);
+				var res = operand1.Equals(operand2);
 				PushData(res);
 				break;
 			}
@@ -201,7 +195,7 @@ public class Compiler(List<Command> commands)
 			{
 				var operand1 = PopData()!;
 				var operand2 = PopData();
-				var res = operand1 != operand2 || !operand1.Equals(operand2);
+				var res = !(operand1.Equals(operand2));
 				PushData(res);
 				break;
 			}
@@ -257,45 +251,45 @@ public class Compiler(List<Command> commands)
 
 	private object? PeekData()
 	{
-		return _data.Peek();
+		return data.Peek();
 	}
 	private object? PopData()
 	{
-		return _data.Pop();
+		return data.Pop();
 	}
 	private void PushData(object data)
 	{
-		_data.Push(data);
+		this.data.Push(data);
 	}
 
 	private int GetDataLength()
 	{
-		return _data.Count;
+		return data.Count;
 	}
 
 	private int GetOperatorsLength()
 	{
-		return _operations.Count;
+		return operations.Count;
 	}
 	
 	private void PushOperator(string data)
 	{
-		_operations.Push(data);
+		operations.Push(data);
 	}
 
 	private string PopOperator()
 	{
-		return _operations.Pop();
+		return operations.Pop();
 	}
 
 	private string PeekOperator()
 	{
-		return _operations.Peek();
+		return operations.Peek();
 	}
 
 	private bool HasVariable(string variable)
 	{
-		return _variables.ContainsKey(variable);
+		return variables.ContainsKey(variable);
 	}
 
 	private object? GetVariable(string name)
@@ -305,14 +299,14 @@ public class Compiler(List<Command> commands)
 			return null;
 		}
 		
-		return _variables[name];
+		return variables[name];
 	}
 	
 	private void AddVariable(string name)
 	{
 		if (!HasVariable(name))
 		{
-			_variables.Add(name, null);
+			variables.Add(name, null);
 		}
 	}
 	
@@ -320,11 +314,11 @@ public class Compiler(List<Command> commands)
 	{
 		if (HasVariable(name))
 		{
-			_variables[name] = value;
+			variables[name] = value;
 		}
 		else
 		{
-			_variables.Add(name, value);
+			variables.Add(name, value);
 		}
 	}
 }

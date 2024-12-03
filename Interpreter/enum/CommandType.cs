@@ -11,4 +11,5 @@ public enum CommandType
     Return,
     If,
     Else,
+    Jump
 }

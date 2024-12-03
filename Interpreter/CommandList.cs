@@ -2,9 +2,9 @@ namespace Interpreter;
 
 public class CommandList
 {
-    private readonly List<Command> _commands = [];
+    private readonly List<Command> commands = [];
     
-    public int GetCommandCount() => _commands.Count;
+    public int GetCommandCount() => commands.Count;
     public void AddOperator(int index, object value)
     {
         Add(index, CommandType.Operator, value);
@@ -23,7 +23,7 @@ public class CommandList
     }
     private void Add(Command command)
     {
-        _commands.Add(command);
+        commands.Add(command);
     }
     public void AddEndExpression(int index)
     {
@@ -49,16 +49,21 @@ public class CommandList
     {
         Add(index, CommandType.ConstVariable, value);
     }
-    private void Add(int index, CommandType type, object value)
+  public void AddJump(int index, out Command command)
+  {
+    command = new Command(index, CommandType.Jump);
+    Add(command);
+  }
+  private void Add(int index, CommandType type, object value)
     {
-        _commands.Add(new Command(index, type, value));
+        commands.Add(new Command(index, type, value));
     }
     private void Add(int index, CommandType type)
     {
-        _commands.Add(new Command(index, type));
+        commands.Add(new Command(index, type));
     }
     public List<Command> GetCommands()
     {
-        return _commands;
+        return commands;
     }
 }
