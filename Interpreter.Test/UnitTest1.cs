@@ -8,7 +8,7 @@ public class Tests
     public void Setup()
     {
     }
-    
+
 
     [TestCase("""
                     x = 1+2;
@@ -169,14 +169,14 @@ public class Tests
               }
               return x;
               """, ExpectedResult = 5)]
-  [TestCase("""
+    [TestCase("""
               y = 0;
               while (y <= 5) {
                 y = y + 1;
               }
               return y;
               """, ExpectedResult = 6)]
-  [TestCase("""
+    [TestCase("""
               if (2 == 2){
                return 3;
               }else if (4 == 4){
@@ -186,7 +186,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 3)]
-  [TestCase("""
+    [TestCase("""
               if (2 != 2){
                return 3;
               }else if (4 == 4){
@@ -196,7 +196,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 6)]
-  [TestCase("""
+    [TestCase("""
               if (2 != 2){
                return 3;
               }else if (4 < 4){
@@ -206,7 +206,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 7)]
-  [TestCase("""
+    [TestCase("""
               if (2 != 2){
                return 3;
               }else if (4 < 4){
@@ -215,7 +215,7 @@ public class Tests
 
               return 8;
               """, ExpectedResult = 8)]
-  [TestCase("""
+    [TestCase("""
               if (1 >= 2){
                return 3;
               }else if (3 <= 4){
@@ -227,7 +227,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 5)]
-  [TestCase("""
+    [TestCase("""
               if (1 >= 2){
                return 3;
               }else if (3 <= 4){
@@ -239,7 +239,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 6)]
-  [TestCase("""
+    [TestCase("""
               if (1 <= 2){
                return 3;
               }else if (3 <= 4){
@@ -251,25 +251,33 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 3)]
-  [TestCase("""
+    [TestCase("""
               if 3 == 3 {
                return 1;
               }
               return 6;
               """, ExpectedResult = 1)]
-  [TestCase("""
+    [TestCase("""
               if 3 != 3 {
                return 1;
               }
               return 6;
               """, ExpectedResult = 6)]
-  public object? TestCompiler(string input)
+    [TestCase("""
+               fun name()
+               {
+                   return "Hello World!";
+               }
+               return;
+              """,ExpectedResult = 0)]
+    public object? TestCompiler(string input)
     {
         var p = new Parser(input);
         var c = new Compiler(p.Parse());
         return c.Compile();
     }
-  [TestCase("""
+
+    [TestCase("""
               y = 1;
               x = 0;
               if (y == 2){
@@ -280,18 +288,17 @@ public class Tests
               }
               return x;
               """)]
-  public void BadTestCompiler(string input)
-  {
-    try
+    public void BadTestCompiler(string input)
     {
-      var p = new Parser(input);
-      var c = new Compiler(p.Parse());
-      Assert.IsFalse(true);
+        try
+        {
+            var p = new Parser(input);
+            var c = new Compiler(p.Parse());
+            Assert.IsFalse(true);
+        }
+        catch (Exception e)
+        {
+            Assert.IsTrue(true);
+        }
     }
-    catch (Exception e)
-    {
-      Assert.IsTrue(true);
-    }
-  }
-    
 }

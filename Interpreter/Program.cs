@@ -60,16 +60,22 @@ public class Program
     //                   
     //                   return x;
     //                   """);
+    // var a = InitParser("""
+    //                        if (2 == 2){
+    //                         return 3;
+    //                        }else if (4 == 4){
+    //                         return 6;
+    //                        }else{
+    //                         return 7;
+    //                        }
+    //                        return 8;
+    //                        """);
     var a = InitParser("""
-                           if (2 == 2){
-                            return 3;
-                           }else if (4 == 4){
-                            return 6;
-                           }else{
-                            return 7;
-                           }
-                           return 8;
-                           """);
+                        fun name()
+                        {
+                            return "Hello World!";
+                        }
+                       """);
     //var a = InitParser("""
     //                       if (1 <= 2){
     //                        return 3;
@@ -119,8 +125,8 @@ public class Program
             Console.WriteLine("------------------");
         }
 
-        var b = new Compiler(command);
-        Console.WriteLine("result: " + b.Compile());
+        //var b = new Compiler(command);
+        //Console.WriteLine("result: " + b.Compile());
     }
 
     public static Parser InitParser(string input)

@@ -10,6 +10,7 @@ public enum CommandType
     ConstVariable,
     Return,
     If,
-    Else,
-    Jump
+    Function,
+    Jump,
+    LocalVariable
 }

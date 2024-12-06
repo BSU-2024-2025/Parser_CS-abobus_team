@@ -1,11 +1,30 @@
+using System.Collections.Specialized;
+
 namespace Interpreter;
 
+
+class LocalDictionary
+{
+	public Dictionary<string, (bool, int)> locals = new();
+	private int count = 0;
+	public void AddVariable(string varName, bool isParam)
+	{
+		locals.Add(varName, (isParam, count++));
+	}
+
+	public (bool,int) GetOffset(string varName)
+	{
+		var list = locals[varName];
+		return list;
+	}
+}
 public class Compiler(List<Command> commands)
 {
 	private readonly List<Command> commands = commands;
-	private readonly Stack<string> operations = new();
-	private readonly Stack<object?> data = new();
+	private readonly MyStack<string> operations = new();
+	private readonly MyStack<object?> data = new();
 	private readonly Dictionary<string, object?> variables = new();
+	private readonly Dictionary<string, LocalDictionary> functions = new();
 
 	public object? Compile()
 	{
@@ -33,7 +52,6 @@ public class Compiler(List<Command> commands)
 					{
 						throw new Exception($"Variable '{command.Value}' is not defined.");
 					}
-
 					break;
 				}
 				case CommandType.Operator:

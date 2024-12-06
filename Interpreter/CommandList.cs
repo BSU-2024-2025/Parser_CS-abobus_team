@@ -16,9 +16,9 @@ public class CommandList
         Add(command);
     }
     
-    public void AddElse(int index, out Command command)
+    public void AddFunction(int index, object name)
     {
-        command = new Command(index, CommandType.Else);
+        var command = new Command(index, CommandType.Function, (name, GetCommandCount()));
         Add(command);
     }
     private void Add(Command command)
@@ -65,5 +65,10 @@ public class CommandList
     public List<Command> GetCommands()
     {
         return commands;
+    }
+
+    public void AddLocalVariable(int currentIndex, string s)
+    {
+        commands.Add(new Command(currentIndex, CommandType.LocalVariable, s));
     }
 }
