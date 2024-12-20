@@ -16,6 +16,7 @@ public class Compiler(List<Command> commands)
   public object? Compile()
 	{
 		int bp = 0;
+		string? funcName = null;
 		for (var i = 0; i < commands.Count; i++)
 		{
 			var command = commands[i];
@@ -81,8 +82,7 @@ public class Compiler(List<Command> commands)
           }
 					else
 					{
-						
-						i = ReturnFunc();
+						i = ReturnFunc(funcName!, ref bp);
 					}
 					break;
 				case CommandType.EndExpression:
@@ -98,7 +98,10 @@ public class Compiler(List<Command> commands)
 					i = (int)command.Value! - 1; // increment in for
           break;
 				case CommandType.CallFunction:
-					i = CallFunc(i, (string)command.Value!, bp, curContext);
+          data.Push(i);
+          data.Push(funcName);
+          data.Push(bp);
+          i = CallFunc((string)command.Value!);
 					break;
 			}
 		}
@@ -125,7 +128,6 @@ public class Compiler(List<Command> commands)
 		bp = (int)data.Pop()!;
     int curIndex = (int)data.Pop()!;
 
-
     if (isResult)
 		{
       data.Push(result);
@@ -134,36 +136,17 @@ public class Compiler(List<Command> commands)
 		return curIndex;
   }
 
-  private int CallFunc(int curIndex, LocalDictionary context, int bp)
+  private int CallFunc(string funcName)
   {
-		ArgumentNullException.ThrowIfNull(context);
-    data.Push(curIndex);
-    data.Push(context);
-    data.Push(bp);
-    for (int i = 0; i < context.localCount; i++)
-    {
-      data.Push(null);
+    var func = functions[funcName];
+  
+    for (int i = 0; i < func.localCount; i++)
+  	{
+  		data.Push(null);
     }
-
-    return context.codeIndex;
+  
+  	return func.codeIndex;
   }
-
-  //private int CallFunc(int curIndex, string funcName, int bp)
-  //{
-  //	data.Push(curIndex);
-  //
-  //	var func = functions[funcName];
-  //
-  //  data.Push(bp);
-  //  for (int i = 0; i < func.localCount; i++)
-  //	{
-  //		data.Push(null);
-  //  }
-  //
-  //  var codeIndex = func.paramCount;
-  //
-  //	return codeIndex;
-  //}
 
   private void Execute(string operation)
 	{

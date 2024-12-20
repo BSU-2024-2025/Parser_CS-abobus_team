@@ -263,13 +263,6 @@ public class Tests
               }
               return 6;
               """, ExpectedResult = 6)]
-    [TestCase("""
-               fun name()
-               {
-                   return "Hello World!";
-               }
-               return;
-              """,ExpectedResult = 0)]
     public object? TestCompiler(string input)
     {
         var p = new Parser(input);
@@ -301,4 +294,32 @@ public class Tests
             Assert.IsTrue(true);
         }
     }
+
+  [TestCase("""
+               fun foo()
+               {
+                   
+               }
+               return;
+              """, ExpectedResult = 0)]
+  [TestCase("""
+               fun foo()
+               {
+                   
+               }
+               return foo();
+              """, ExpectedResult = 0)]
+  [TestCase("""
+               fun name()
+               {
+                   return "Hello World!";
+               }
+               return;
+              """, ExpectedResult = 0)]
+  public object? TestFunctions(string input)
+  {
+    var p = new Parser(input);
+    var c = new Compiler(p.Parse());
+    return c.Compile();
+  }
 }

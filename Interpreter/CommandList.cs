@@ -19,6 +19,7 @@ public class CommandList
     public void AddFunction(int index, object name)
     {
         var command = new Command(index, CommandType.Function, (name, GetCommandCount()));
+        // ToDo Add function to dictionary
         Add(command);
     }
     private void Add(Command command)
@@ -72,7 +73,8 @@ public class CommandList
         commands.Add(new Command(currentIndex, CommandType.LocalVariable, s));
     }
 
-  public void AddCallFucntion(int currentIndex, string name)
+
+  public void AddCallFunction(int currentIndex, string name)
   {
     commands.Add(new Command(currentIndex, CommandType.CallFunction, name));
   }

@@ -42,7 +42,7 @@ public class Parser(string input)
             {
                 param = ParseName();
                 continue;
-            };
+            }
             break;
         }
         if (!ParseStringLiteral(")")) throw new Exception("no close parentheses");
@@ -209,7 +209,7 @@ public class Parser(string input)
             return true;
         }
 
-        if (ParseVariable())
+        if (ParseVariableOrFunctionCall())
             return true;
 
         if (ParseStringLiteral(Operator.LeftParenthesis))
@@ -228,11 +228,38 @@ public class Parser(string input)
         return false;
     }
 
-    private bool ParseVariable()
+  private bool ParseFunctionCall(string name)
+  {
+    commandList.AddCallFunction(currentIndex, name!);
+    while (!ParseStringLiteral(")"))
+    {
+      ParseExpression();
+      if (ParseStringLiteral(")")) break;
+      if (ParseStringLiteral(","))
+      {
+        continue;
+      }
+      else
+      {
+        throw new Exception("invalid function call");
+      }
+    }
+    return true;
+  }
+
+  private bool ParseVariableOrFunctionCall()
     {
         var name = ParseName();
         if (name == "") return false;
-        commandList.AddConstVariable(currentIndex, name);
+        if (ParseStringLiteral("("))
+        {
+          ParseFunctionCall(name);
+          commandList.AddCallFunction(currentIndex, name!);
+        }
+        else
+        {
+          commandList.AddConstVariable(currentIndex, name);
+        }
         return true;
     }
 
