@@ -3,21 +3,6 @@ using System.Collections.Specialized;
 namespace Interpreter;
 
 
-class LocalDictionary
-{
-	public Dictionary<string, (bool, int)> locals = new();
-	private int count = 0;
-	public void AddVariable(string varName, bool isParam)
-	{
-		locals.Add(varName, (isParam, count++));
-	}
-
-	public (bool,int) GetOffset(string varName)
-	{
-		var list = locals[varName];
-		return list;
-	}
-}
 public class Compiler(List<Command> commands)
 {
 	private readonly List<Command> commands = commands;
@@ -25,9 +10,12 @@ public class Compiler(List<Command> commands)
 	private readonly MyStack<object?> data = new();
 	private readonly Dictionary<string, object?> variables = new();
 	private readonly Dictionary<string, LocalDictionary> functions = new();
+	private int nestLevel = 0;
+	private LocalDictionary? context = null;
 
-	public object? Compile()
+  public object? Compile()
 	{
+		int bp = 0;
 		for (var i = 0; i < commands.Count; i++)
 		{
 			var command = commands[i];
@@ -82,12 +70,21 @@ public class Compiler(List<Command> commands)
 					SetVariable((string)command.Value!, PopData());
 					break;
 				case CommandType.Return:
-					if (GetOperatorsLength() != 0)
+					if (nestLevel == 0 && GetOperatorsLength() != 0)
 					{
 						throw new Exception($"Not empty operators stack.");
 					}
 
-					return (GetDataLength() != 0 ? PeekData() : 0) ?? 0;
+					if (nestLevel == 0)
+          {
+            return (GetDataLength() != 0 ? PeekData() : 0) ?? 0;
+          }
+					else
+					{
+						
+						i = ReturnFunc();
+					}
+					break;
 				case CommandType.EndExpression:
 					ExecuteOperators(Operator.End);
 					break;
@@ -100,13 +97,75 @@ public class Compiler(List<Command> commands)
 				case CommandType.Jump:
 					i = (int)command.Value! - 1; // increment in for
           break;
+				case CommandType.CallFunction:
+					i = CallFunc(i, (string)command.Value!, bp, curContext);
+					break;
 			}
 		}
 
 		return null;
 	}
-	
-	private void Execute(string operation)
+
+  private int ReturnFunc(string funcName, ref int bp)
+  {
+		object? result = null;
+		bool isResult = false;
+    var func = functions[funcName];
+
+    if (data.Count > bp)
+    {
+      result = data.Pop();
+			isResult = true;
+    }
+
+		for (int i = 0; i < func.localCount; i++)
+		{
+			data.Pop();
+		}
+		bp = (int)data.Pop()!;
+    int curIndex = (int)data.Pop()!;
+
+
+    if (isResult)
+		{
+      data.Push(result);
+    }
+
+		return curIndex;
+  }
+
+  private int CallFunc(int curIndex, LocalDictionary context, int bp)
+  {
+		ArgumentNullException.ThrowIfNull(context);
+    data.Push(curIndex);
+    data.Push(context);
+    data.Push(bp);
+    for (int i = 0; i < context.localCount; i++)
+    {
+      data.Push(null);
+    }
+
+    return context.codeIndex;
+  }
+
+  //private int CallFunc(int curIndex, string funcName, int bp)
+  //{
+  //	data.Push(curIndex);
+  //
+  //	var func = functions[funcName];
+  //
+  //  data.Push(bp);
+  //  for (int i = 0; i < func.localCount; i++)
+  //	{
+  //		data.Push(null);
+  //  }
+  //
+  //  var codeIndex = func.paramCount;
+  //
+  //	return codeIndex;
+  //}
+
+  private void Execute(string operation)
 	{
 		switch (operation)
 		{

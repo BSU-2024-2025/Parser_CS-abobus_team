@@ -71,4 +71,9 @@ public class CommandList
     {
         commands.Add(new Command(currentIndex, CommandType.LocalVariable, s));
     }
+
+  public void AddCallFucntion(int currentIndex, string name)
+  {
+    commands.Add(new Command(currentIndex, CommandType.CallFunction, name));
+  }
 }

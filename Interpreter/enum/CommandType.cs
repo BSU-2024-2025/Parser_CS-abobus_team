@@ -12,5 +12,6 @@ public enum CommandType
     If,
     Function,
     Jump,
-    LocalVariable
+    LocalVariable,
+    CallFunction
 }
