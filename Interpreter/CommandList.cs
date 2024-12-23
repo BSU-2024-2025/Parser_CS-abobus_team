@@ -20,6 +20,7 @@ public class CommandList
     {
         var command = new Command(index, CommandType.Function, (name, GetCommandCount()));
         // ToDo Add function to dictionary
+
         Add(command);
     }
     private void Add(Command command)

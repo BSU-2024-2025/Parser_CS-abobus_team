@@ -265,8 +265,9 @@ public class Tests
               """, ExpectedResult = 6)]
     public object? TestCompiler(string input)
     {
-        var p = new Parser(input);
-        var c = new Compiler(p.Parse());
+        //var p = new Parser(input);
+        //var c = new Compiler(p.Parse());
+        var c = new Compiler(input);
         return c.Compile();
     }
 
@@ -285,8 +286,9 @@ public class Tests
     {
         try
         {
-            var p = new Parser(input);
-            var c = new Compiler(p.Parse());
+             //var p = new Parser(input);
+      //var c = new Compiler(p.Parse());
+            var c = new Compiler(input);
             Assert.IsFalse(true);
         }
         catch (Exception e)
@@ -298,7 +300,6 @@ public class Tests
   [TestCase("""
                fun foo()
                {
-                   
                }
                return;
               """, ExpectedResult = 0)]
@@ -318,8 +319,9 @@ public class Tests
               """, ExpectedResult = 0)]
   public object? TestFunctions(string input)
   {
-    var p = new Parser(input);
-    var c = new Compiler(p.Parse());
+    //var p = new Parser(input);
+    //var c = new Compiler(p.Parse());
+    var c = new Compiler(input);
     return c.Compile();
   }
 }

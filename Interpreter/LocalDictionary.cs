@@ -21,6 +21,13 @@ namespace Interpreter
       this.localCount = 0;
     }
 
+    public LocalDictionary()
+    {
+      this.codeIndex = 0;
+      this.paramCount = 0;
+      this.localCount = 0;
+    }
+
     public void AddLocal(string varName, bool isParam)
     {
       if (!isParam)

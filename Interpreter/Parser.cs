@@ -4,8 +4,16 @@ public class Parser(string input)
 {
     private int currentIndex;
     private readonly CommandList commandList = new();
+    public readonly Dictionary<string, object?> variables = new();
+    public readonly Dictionary<string, LocalDictionary> functions = new();
 
-    private char GetCurrentChar()
+
+  public void AddFunction(string name)
+  {
+    functions.Add(name, new LocalDictionary(commandList.GetCommandCount()));
+  }
+
+  private char GetCurrentChar()
     {
         return input[currentIndex];
     }
@@ -32,7 +40,8 @@ public class Parser(string input)
         if (!ParseStringLiteral("fun")) return false;
         var name = ParseName();
         if (name == "") throw new Exception("Invalid function name");
-        commandList.AddFunction(currentIndex, name);
+        //commandList.AddFunction(currentIndex, name);
+        AddFunction(name);
         if (!ParseStringLiteral("(")) throw new Exception("No open parentheses");
         var param = ParseName();
         while (!string.IsNullOrEmpty(param))

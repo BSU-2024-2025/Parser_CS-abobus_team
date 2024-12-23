@@ -3,18 +3,35 @@ using System.Collections.Specialized;
 namespace Interpreter;
 
 
-public class Compiler(List<Command> commands)
+public class Compiler(string input)
 {
-	private readonly List<Command> commands = commands;
+	private string input = input;
+	private List<Command> commands = new();
 	private readonly MyStack<string> operations = new();
 	private readonly MyStack<object?> data = new();
-	private readonly Dictionary<string, object?> variables = new();
-	private readonly Dictionary<string, LocalDictionary> functions = new();
-	private int nestLevel = 0;
+	//private readonly Dictionary<string, object?> variables = new();
+  //private readonly Dictionary<string, LocalDictionary> functions = new();
+  private int nestLevel = 0;
 	private LocalDictionary? context = null;
+	private Parser parser = null;
+
+
+	//public Compiler(List<Command> commands)
+	//{
+	//	this.commands = commands;
+	//}
+	//
+	//public Compiler(string input)
+	//{
+  //  var p = new Parser(input);
+  //  this.commands = p.Parse();
+  //}
 
   public object? Compile()
 	{
+		parser = new Parser(input);
+		commands.Clear();
+		commands = parser.Parse();
 		int bp = 0;
 		string? funcName = null;
 		for (var i = 0; i < commands.Count; i++)
@@ -113,7 +130,7 @@ public class Compiler(List<Command> commands)
   {
 		object? result = null;
 		bool isResult = false;
-    var func = functions[funcName];
+    var func = parser.functions[funcName];
 
     if (data.Count > bp)
     {
@@ -138,7 +155,7 @@ public class Compiler(List<Command> commands)
 
   private int CallFunc(string funcName)
   {
-    var func = functions[funcName];
+    var func = parser.functions[funcName];
   
     for (int i = 0; i < func.localCount; i++)
   	{
@@ -349,7 +366,7 @@ public class Compiler(List<Command> commands)
 
 	private bool HasVariable(string variable)
 	{
-		return variables.ContainsKey(variable);
+		return parser.variables.ContainsKey(variable);
 	}
 
 	private object? GetVariable(string name)
@@ -359,14 +376,14 @@ public class Compiler(List<Command> commands)
 			return null;
 		}
 		
-		return variables[name];
+		return parser.variables[name];
 	}
 	
 	private void AddVariable(string name)
 	{
 		if (!HasVariable(name))
 		{
-			variables.Add(name, null);
+      parser.variables.Add(name, null);
 		}
 	}
 	
@@ -374,11 +391,11 @@ public class Compiler(List<Command> commands)
 	{
 		if (HasVariable(name))
 		{
-			variables[name] = value;
+      parser.variables[name] = value;
 		}
 		else
 		{
-			variables.Add(name, value);
+      parser.variables.Add(name, value);
 		}
 	}
 }
