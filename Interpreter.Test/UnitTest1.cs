@@ -308,8 +308,9 @@ public class Tests
                {
                    
                }
-               return foo();
-              """, ExpectedResult = 0)]
+               foo();
+               return 1;
+              """, ExpectedResult = 1)]
   [TestCase("""
                fun name()
                {
@@ -317,6 +318,21 @@ public class Tests
                }
                return;
               """, ExpectedResult = 0)]
+  [TestCase("""
+             fun name()
+             {
+                 return 1;
+             }
+             return name();
+            """, ExpectedResult = 1)]
+  [TestCase("""
+             fun name()
+             {
+                 return 1 + 2;
+             }
+             return name() + 3;
+            """, ExpectedResult = 6)]
+  
   public object? TestFunctions(string input)
   {
     //var p = new Parser(input);

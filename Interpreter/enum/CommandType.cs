@@ -13,5 +13,6 @@ public enum CommandType
     Function,
     Jump,
     LocalVariable,
-    CallFunction
+    CallFunction,
+    PopStack,
 }

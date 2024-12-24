@@ -10,7 +10,7 @@ public class Parser(string input)
 
   public void AddFunction(string name)
   {
-    functions.Add(name, new LocalDictionary(commandList.GetCommandCount()));
+    functions.Add(name, new LocalDictionary(commandList.GetCommandCount() + 1)); // +1 for jump
   }
 
   private char GetCurrentChar()
@@ -20,13 +20,13 @@ public class Parser(string input)
 
     public List<Command> Parse()
     {
-        var result = ParseOperators();
+        var result = ParseOperators(true);
         return commandList.GetCommands();
     }
 
     public List<Command> Parse(out bool success)
     {
-        success = ParseOperators();
+        success = ParseOperators(true);
         if (IsNotEnd())
         {
             success = false;
@@ -41,7 +41,7 @@ public class Parser(string input)
         var name = ParseName();
         if (name == "") throw new Exception("Invalid function name");
         //commandList.AddFunction(currentIndex, name);
-        AddFunction(name);
+        AddFunction(name); 
         if (!ParseStringLiteral("(")) throw new Exception("No open parentheses");
         var param = ParseName();
         while (!string.IsNullOrEmpty(param))
@@ -55,11 +55,30 @@ public class Parser(string input)
             break;
         }
         if (!ParseStringLiteral(")")) throw new Exception("no close parentheses");
+        commandList.AddJump(currentIndex, out var command2);
         ParseBlock();
+        commandList.AddConstant(currentIndex, 0);
+        commandList.AddEndExpression(currentIndex);
+        commandList.AddReturn(currentIndex);
+        command2.Value = commandList.GetCommandCount();
         return true;
     }
 
-    private bool ParseOperators()
+
+    private bool ParseProcedureCall()
+    {
+        var name = ParseName();
+        if (name == "") return false;
+        if (ParseStringLiteral("("))
+        {
+            ParseFunctionCall(name);
+            commandList.AddCallFunction(currentIndex, name!);
+            return true;
+        }
+        return false;
+    }
+
+    private bool ParseOperators(bool parseFunction = false)
     {
         while (IsNotEnd())
         {
@@ -68,7 +87,7 @@ public class Parser(string input)
                 continue;
             }
 
-            if (ParseFunction())
+            if (parseFunction && ParseFunction())
             {
                 continue;
             }
@@ -83,15 +102,44 @@ public class Parser(string input)
                 continue;
             }
 
-            if (ParseAssign())
+            if (ParseAssignOrProcedureCall())
             {
                 continue;
             }
+            
 
             return false;
         }
 
         return !IsNotEnd();
+    }
+
+
+    private bool ParseAssignOrProcedureCall()
+    {
+        var name = ParseName();
+        if (name == "") return false;
+        if (ParseStringLiteral("("))
+        {
+            ParseFunctionCall(name);
+            if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+            commandList.AddPopStack(currentIndex);
+            return true;
+        }
+        else
+        {
+            if (!ParseStringLiteral("=")) return false;
+
+            ParseExpression();
+            commandList.AddEndExpression(currentIndex);
+
+            if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+
+            commandList.AddVariable(currentIndex, name);
+            commandList.AddAssign(currentIndex, name);
+            return true;
+        }
+        return true;
     }
 
     private bool ParseAssign()
@@ -239,7 +287,7 @@ public class Parser(string input)
 
   private bool ParseFunctionCall(string name)
   {
-    commandList.AddCallFunction(currentIndex, name!);
+    // commandList.AddCallFunction(currentIndex, name!);
     while (!ParseStringLiteral(")"))
     {
       ParseExpression();
@@ -253,6 +301,8 @@ public class Parser(string input)
         throw new Exception("invalid function call");
       }
     }
+    commandList.AddCallFunction(currentIndex, name!);
+    
     return true;
   }
 

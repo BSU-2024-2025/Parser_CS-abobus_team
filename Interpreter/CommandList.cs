@@ -39,6 +39,12 @@ public class CommandList
     {
         Add(index, CommandType.Assign,value);
     }
+
+
+    public void AddPopStack(int index)
+    {
+        Add(index, CommandType.PopStack);
+    }
     public void AddVariable(int index, object value)
     {
         Add(index, CommandType.Variable, value);
