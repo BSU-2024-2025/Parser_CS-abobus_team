@@ -395,15 +395,69 @@ public class Tests
             {
                 return 1;
             }
-            
+
             fun moo()
             {
                 return 2;
             }
-            
-            x = moo() + foo();
+
+            x = moo();
+            y = foo();
+            return x + y;
+            """, ExpectedResult = 3)]
+
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+
+            fun moo()
+            {
+                return foo() + 2;
+            }
+
+            x = moo();
             return x;
             """, ExpectedResult = 3)]
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+
+            fun moo()
+            {
+                return foo();
+            }
+
+            x = moo();
+            return x;
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            fun foo()
+            {
+                x = 1 + 2 * 3;
+                return x;
+            }
+            return foo();
+            """, ExpectedResult = 7)]
+  [TestCase("""
+            x = 1 + 2;
+            fun foo()
+            {
+                x = 1 + 2 * 3;
+                return x;
+            }
+            x = x + 5;
+            return foo();
+            """, ExpectedResult = 7)]
+  [TestCase("""
+            x = 3;
+            x = x + 5;
+            return x;
+            """, ExpectedResult = 8)]
+  // not working
   [TestCase("""
             fun foo()
             {
@@ -415,9 +469,8 @@ public class Tests
                 return 2;
             }
 
-            x = moo();
-            y = foo();
-            return x + y;
+            x = moo() + foo();
+            return x;
             """, ExpectedResult = 3)]
   [TestCase("""
             fun foo()
