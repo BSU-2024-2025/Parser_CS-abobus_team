@@ -289,6 +289,7 @@ public class Tests
              //var p = new Parser(input);
       //var c = new Compiler(p.Parse());
             var c = new Compiler(input);
+            c.Compile();
             Assert.IsFalse(true);
         }
         catch (Exception e)
@@ -401,6 +402,35 @@ public class Tests
             }
             
             x = moo() + foo();
+            return x;
+            """, ExpectedResult = 3)]
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+
+            fun moo()
+            {
+                return 2;
+            }
+
+            x = moo();
+            y = foo();
+            return x + y;
+            """, ExpectedResult = 3)]
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+
+            fun moo()
+            {
+                return 2 + foo();
+            }
+
+            x = moo();
             return x;
             """, ExpectedResult = 3)]
   public object? TestFunctions(string input)

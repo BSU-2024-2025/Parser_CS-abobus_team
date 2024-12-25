@@ -313,7 +313,7 @@ public class Parser(string input)
         if (ParseStringLiteral("("))
         {
           ParseFunctionCall(name);
-          commandList.AddCallFunction(currentIndex, name!);
+          //commandList.AddCallFunction(currentIndex, name!);
         }
         else
         {
