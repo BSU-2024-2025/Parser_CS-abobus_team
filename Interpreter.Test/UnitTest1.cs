@@ -389,6 +389,20 @@ public class Tests
             x = foo() + 3;
             return x + 2;
             """, ExpectedResult = 6)]
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+            
+            fun moo()
+            {
+                return 2;
+            }
+            
+            x = moo() + foo();
+            return x;
+            """, ExpectedResult = 3)]
   public object? TestFunctions(string input)
   {
     //var p = new Parser(input);
