@@ -332,7 +332,63 @@ public class Tests
              }
              return name() + 3;
             """, ExpectedResult = 6)]
-  
+  [TestCase("""
+             fun foo()
+             {
+                 x = 1;
+                 return x;
+             }
+             return foo();
+            """, ExpectedResult = 1)]
+  [TestCase("""
+             fun foo()
+             {
+                 x = 1;
+                 y = 2;
+                 return x + y;
+             }
+             return foo() + 3;
+            """, ExpectedResult = 6)]
+  [TestCase("""
+            x = 4;
+             fun foo()
+             {
+                 x = 1;
+                 y = 2;
+                 return x + y;
+             }
+             return foo() + 3;
+            """, ExpectedResult = 6)]
+  [TestCase("""
+            
+            fun moo()
+            {
+            }
+            
+            fun foo()
+            {
+            }
+            
+            foo();
+            moo();
+            return moo() - 1;
+            """, ExpectedResult = -1)]
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+            x = foo();
+            return x + 2;
+            """, ExpectedResult = 3)]
+  [TestCase("""
+            fun foo()
+            {
+                return 1;
+            }
+            x = foo() + 3;
+            return x + 2;
+            """, ExpectedResult = 6)]
   public object? TestFunctions(string input)
   {
     //var p = new Parser(input);
