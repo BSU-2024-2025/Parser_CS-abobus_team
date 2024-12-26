@@ -471,7 +471,6 @@ public class Tests
             x = (moo()) + (foo());
             return x;
             """, ExpectedResult = 3)]
-  // not working
   [TestCase("""
             fun foo()
             {
@@ -532,6 +531,15 @@ public class Tests
             x = foo();
             
             return x;
+            """, ExpectedResult = 3)]
+  // not working
+  [TestCase("""
+            fun foo(a)
+            {
+              return a;
+            }
+            
+            return foo(3);
             """, ExpectedResult = 3)]
   public object? TestFunctions(string input)
   {

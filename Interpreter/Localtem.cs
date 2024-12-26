@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Interpreter
 {
-  internal class LocalItem
+  public class LocalItem
   {
     public bool isParam;
     public int offset;

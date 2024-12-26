@@ -1,11 +1,15 @@
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace Interpreter;
 
 public class Parser(string input)
 {
-    private int currentIndex;
-    private readonly CommandList commandList = new();
-    public readonly Dictionary<string, object?> variables = new();
-    public readonly Dictionary<string, LocalDictionary> functions = new();
+  private int currentIndex;
+  private readonly CommandList commandList = new();
+  public readonly Dictionary<string, object?> variables = new();
+  public readonly Dictionary<string, LocalDictionary> functions = new();
+  private string funcName = null;
+  private LocalDictionary func = null;
 
 
   public void AddFunction(string name)
@@ -14,276 +18,297 @@ public class Parser(string input)
   }
 
   private char GetCurrentChar()
+  {
+    return input[currentIndex];
+  }
+
+  public List<Command> Parse()
+  {
+    var result = ParseOperators(true);
+    return commandList.GetCommands();
+  }
+
+  public List<Command> Parse(out bool success)
+  {
+    success = ParseOperators(true);
+    if (IsNotEnd())
     {
-        return input[currentIndex];
+      success = false;
     }
 
-    public List<Command> Parse()
+    return commandList.GetCommands();
+  }
+
+  private bool ParseFunction()
+  {
+    if (!ParseStringLiteral("fun")) return false;
+    var name = ParseName();
+    if (name == "") throw new Exception("Invalid function name");
+    //commandList.AddFunction(currentIndex, name);
+    AddFunction(name);
+    funcName = name;
+    if (!ParseStringLiteral("(")) throw new Exception("No open parentheses");
+    var param = ParseName();
+
+    var func = functions[funcName];
+    while (!string.IsNullOrEmpty(param))
     {
-        var result = ParseOperators(true);
-        return commandList.GetCommands();
+      func.AddLocal(param, true);
+      if (ParseStringLiteral(","))
+      {
+        param = ParseName();
+        func.AddLocal(param, true);
+        continue;
+      }
+      break;
+    }
+    if (!ParseStringLiteral(")")) throw new Exception("no close parentheses");
+
+    CalcParamOffset(funcName);
+
+    commandList.AddJump(currentIndex, out var command2);
+    ParseBlock();
+    commandList.AddConstant(currentIndex, 0);
+    commandList.AddEndExpression(currentIndex);
+    commandList.AddReturn(currentIndex);
+    command2.Value = commandList.GetCommandCount();
+    return true;
+  }
+
+  private void CalcParamOffset(string funcName)
+  {
+    var func = functions[funcName];
+    int paramCount = 0;
+
+    foreach (var param in func.Locals)
+    {
+      if (param.Value.isParam)
+      {
+        param.Value.offset = func.paramCount - param.Value.offset + 3;
+      }
+    }
+  }
+
+
+  private bool ParseProcedureCall()
+  {
+    var name = ParseName();
+    if (name == "") return false;
+    if (ParseStringLiteral("("))
+    {
+      ParseFunctionCall(name);
+      commandList.AddCallFunction(currentIndex, name!);
+      return true;
+    }
+    return false;
+  }
+
+  private bool ParseOperators(bool parseFunction = false)
+  {
+    while (IsNotEnd())
+    {
+      if (ParseReturn())
+      {
+        continue;
+      }
+
+      if (parseFunction && ParseFunction())
+      {
+        continue;
+      }
+
+      if (ParseIf())
+      {
+        continue;
+      }
+
+      if (ParseWhile())
+      {
+        continue;
+      }
+
+      if (ParseAssignOrProcedureCall())
+      {
+        continue;
+      }
+
+
+      return false;
     }
 
-    public List<Command> Parse(out bool success)
-    {
-        success = ParseOperators(true);
-        if (IsNotEnd())
-        {
-            success = false;
-        }
+    return !IsNotEnd();
+  }
 
-        return commandList.GetCommands();
+
+  private bool ParseAssignOrProcedureCall()
+  {
+    var name = ParseName();
+    if (name == "") return false;
+    if (ParseStringLiteral("("))
+    {
+      ParseFunctionCall(name);
+      if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+      commandList.AddPopStack(currentIndex);
+      return true;
+    }
+    else
+    {
+      if (!ParseStringLiteral("=")) return false;
+
+      ParseExpression();
+      commandList.AddEndExpression(currentIndex);
+
+      if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+
+      commandList.AddVariable(currentIndex, name);
+      commandList.AddAssign(currentIndex, name);
+      return true;
+    }
+    return true;
+  }
+
+  private bool ParseAssign()
+  {
+    var name = ParseName();
+
+    if (name == "") return false;
+
+    if (!ParseStringLiteral("=")) return false;
+
+    ParseExpression();
+    commandList.AddEndExpression(currentIndex);
+
+    if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+
+    commandList.AddVariable(currentIndex, name);
+    commandList.AddAssign(currentIndex, name);
+
+    return true;
+  }
+
+  private string ParseName()
+  {
+    Skip();
+
+    var prevIndex = currentIndex;
+
+    if (IsNotEnd() && (char.IsAsciiLetter(GetCurrentChar()) || GetCurrentChar() == '_'))
+    {
+      while (IsNotEnd() && (char.IsAsciiLetter(GetCurrentChar()) || GetCurrentChar() == '_')) currentIndex++;
+
+      return currentIndex > prevIndex ? input[prevIndex..currentIndex] : "";
     }
 
-    private bool ParseFunction()
+    return "";
+  }
+
+  private bool ParseReturn()
+  {
+    if (!ParseStringLiteral("return")) return false;
+
+    if (ParseStringLiteral(";"))
     {
-        if (!ParseStringLiteral("fun")) return false;
-        var name = ParseName();
-        if (name == "") throw new Exception("Invalid function name");
-        //commandList.AddFunction(currentIndex, name);
-        AddFunction(name); 
-        if (!ParseStringLiteral("(")) throw new Exception("No open parentheses");
-        var param = ParseName();
-        while (!string.IsNullOrEmpty(param))
-        {
-            commandList.AddLocalVariable(currentIndex, param);
-            if (ParseStringLiteral(","))
-            {
-                param = ParseName();
-                continue;
-            }
-            break;
-        }
-        if (!ParseStringLiteral(")")) throw new Exception("no close parentheses");
-        commandList.AddJump(currentIndex, out var command2);
+      commandList.AddReturn(currentIndex);
+      return true;
+    }
+
+    ParseExpression();
+
+    if (!ParseStringLiteral(";")) throw new Exception($"Unexpected end of input: {GetCurrentChar()}");
+    commandList.AddEndExpression(currentIndex);
+    commandList.AddReturn(currentIndex);
+
+    return true;
+  }
+
+
+  private bool ParseIf()
+  {
+    if (!ParseStringLiteral("if")) return false;
+
+    ParseExpression();
+    commandList.AddEndExpression(currentIndex);
+    commandList.AddIf(currentIndex, out var command1);
+
+    ParseBlock();
+    command1.Value = commandList.GetCommandCount();
+
+    if (ParseStringLiteral("else"))
+    {
+      commandList.AddJump(currentIndex, out var command2);
+      command1.Value = commandList.GetCommandCount();
+      if (!ParseIf())
+      {
         ParseBlock();
-        commandList.AddConstant(currentIndex, 0);
-        commandList.AddEndExpression(currentIndex);
-        commandList.AddReturn(currentIndex);
-        command2.Value = commandList.GetCommandCount();
-        return true;
+      }
+
+      command2.Value = commandList.GetCommandCount();
     }
 
+    return true;
+  }
 
-    private bool ParseProcedureCall()
-    {
-        var name = ParseName();
-        if (name == "") return false;
-        if (ParseStringLiteral("("))
-        {
-            ParseFunctionCall(name);
-            commandList.AddCallFunction(currentIndex, name!);
-            return true;
-        }
+  private bool ParseExpression()
+  {
+    ParseUnary();
+    if (!ParseOperand()) return false;
+
+    while (ParseBinary())
+      if (!ParseOperand())
         return false;
+    return true;
+  }
+
+  private bool ParseBinary()
+  {
+    Skip();
+    if (IsNotEnd() && GetBinaryOperator(out var op))
+    {
+      commandList.AddOperator(currentIndex, op);
+      return true;
     }
 
-    private bool ParseOperators(bool parseFunction = false)
+    return false;
+  }
+
+  private bool ParseOperand()
+  {
+    if (ParseNum(out var num))
     {
-        while (IsNotEnd())
-        {
-            if (ParseReturn())
-            {
-                continue;
-            }
-
-            if (parseFunction && ParseFunction())
-            {
-                continue;
-            }
-
-            if (ParseIf())
-            {
-                continue;
-            }
-
-            if (ParseWhile())
-            {
-                continue;
-            }
-
-            if (ParseAssignOrProcedureCall())
-            {
-                continue;
-            }
-            
-
-            return false;
-        }
-
-        return !IsNotEnd();
+      if (num != null) commandList.AddConstant(currentIndex, num);
+      return true;
     }
 
-
-    private bool ParseAssignOrProcedureCall()
+    if (ParseString(out var str))
     {
-        var name = ParseName();
-        if (name == "") return false;
-        if (ParseStringLiteral("("))
-        {
-            ParseFunctionCall(name);
-            if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-            commandList.AddPopStack(currentIndex);
-            return true;
-        }
-        else
-        {
-            if (!ParseStringLiteral("=")) return false;
+      if (str != null) commandList.AddConstant(currentIndex, str);
+      return true;
+    }
 
-            ParseExpression();
-            commandList.AddEndExpression(currentIndex);
+    if (ParseBoolean(out var boolean))
+    {
+      if (boolean != null) commandList.AddConstant(currentIndex, boolean);
+      return true;
+    }
 
-            if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+    if (ParseVariableOrFunctionCall())
+      return true;
 
-            commandList.AddVariable(currentIndex, name);
-            commandList.AddAssign(currentIndex, name);
-            return true;
-        }
+    if (ParseStringLiteral(Operator.LeftParenthesis))
+    {
+      commandList.AddOperator(currentIndex, Operator.LeftParenthesis);
+      ParseExpression();
+      if (ParseStringLiteral(Operator.RightParenthesis))
+      {
+        commandList.AddOperator(currentIndex, Operator.RightParenthesis);
         return true;
+      }
+
+      return false;
     }
 
-    private bool ParseAssign()
-    {
-        var name = ParseName();
-
-        if (name == "") return false;
-
-        if (!ParseStringLiteral("=")) return false;
-
-        ParseExpression();
-        commandList.AddEndExpression(currentIndex);
-
-        if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-
-        commandList.AddVariable(currentIndex, name);
-        commandList.AddAssign(currentIndex, name);
-
-        return true;
-    }
-
-    private string ParseName()
-    {
-        Skip();
-
-        var prevIndex = currentIndex;
-
-        if (IsNotEnd() && (char.IsAsciiLetter(GetCurrentChar()) || GetCurrentChar() == '_'))
-        {
-            while (IsNotEnd() && (char.IsAsciiLetter(GetCurrentChar()) || GetCurrentChar() == '_')) currentIndex++;
-
-            return currentIndex > prevIndex ? input[prevIndex..currentIndex] : "";
-        }
-
-        return "";
-    }
-
-    private bool ParseReturn()
-    {
-        if (!ParseStringLiteral("return")) return false;
-
-        if (ParseStringLiteral(";"))
-        {
-            commandList.AddReturn(currentIndex);
-            return true;
-        }
-
-        ParseExpression();
-
-        if (!ParseStringLiteral(";")) throw new Exception($"Unexpected end of input: {GetCurrentChar()}");
-        commandList.AddEndExpression(currentIndex);
-        commandList.AddReturn(currentIndex);
-
-        return true;
-    }
-
-
-    private bool ParseIf()
-    {
-        if (!ParseStringLiteral("if")) return false;
-
-        ParseExpression();
-        commandList.AddEndExpression(currentIndex);
-        commandList.AddIf(currentIndex, out var command1);
-
-        ParseBlock();
-        command1.Value = commandList.GetCommandCount();
-
-        if (ParseStringLiteral("else"))
-        {
-            commandList.AddJump(currentIndex, out var command2);
-            command1.Value = commandList.GetCommandCount();
-            if (!ParseIf())
-            {
-                ParseBlock();
-            }
-
-            command2.Value = commandList.GetCommandCount();
-        }
-
-        return true;
-    }
-
-    private bool ParseExpression()
-    {
-        ParseUnary();
-        if (!ParseOperand()) return false;
-
-        while (ParseBinary())
-            if (!ParseOperand())
-                return false;
-        return true;
-    }
-
-    private bool ParseBinary()
-    {
-        Skip();
-        if (IsNotEnd() && GetBinaryOperator(out var op))
-        {
-            commandList.AddOperator(currentIndex, op);
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool ParseOperand()
-    {
-        if (ParseNum(out var num))
-        {
-            if (num != null) commandList.AddConstant(currentIndex, num);
-            return true;
-        }
-
-        if (ParseString(out var str))
-        {
-            if (str != null) commandList.AddConstant(currentIndex, str);
-            return true;
-        }
-
-        if (ParseBoolean(out var boolean))
-        {
-            if (boolean != null) commandList.AddConstant(currentIndex, boolean);
-            return true;
-        }
-
-        if (ParseVariableOrFunctionCall())
-            return true;
-
-        if (ParseStringLiteral(Operator.LeftParenthesis))
-        {
-            commandList.AddOperator(currentIndex, Operator.LeftParenthesis);
-            ParseExpression();
-            if (ParseStringLiteral(Operator.RightParenthesis))
-            {
-                commandList.AddOperator(currentIndex, Operator.RightParenthesis);
-                return true;
-            }
-
-            return false;
-        }
-
-        return false;
-    }
+    return false;
+  }
 
   private bool ParseFunctionCall(string name)
   {
@@ -302,177 +327,177 @@ public class Parser(string input)
       }
     }
     commandList.AddCallFunction(currentIndex, name!);
-    
+
     return true;
   }
 
   private bool ParseVariableOrFunctionCall()
+  {
+    var name = ParseName();
+    if (name == "") return false;
+    if (ParseStringLiteral("("))
     {
-        var name = ParseName();
-        if (name == "") return false;
-        if (ParseStringLiteral("("))
-        {
-          ParseFunctionCall(name);
-          //commandList.AddCallFunction(currentIndex, name!);
-        }
-        else
-        {
-          commandList.AddConstVariable(currentIndex, name);
-        }
-        return true;
+      ParseFunctionCall(name);
+      //commandList.AddCallFunction(currentIndex, name!);
+    }
+    else
+    {
+      commandList.AddConstVariable(currentIndex, name);
+    }
+    return true;
+  }
+
+  private bool ParseBoolean(out object? o)
+  {
+    Skip();
+    var prevIndex = currentIndex;
+    o = null;
+
+    if (IsNotEnd())
+    {
+      if (ParseStringLiteral("true"))
+        o = true;
+      else if (ParseStringLiteral("false"))
+        o = false;
+      else
+        prevIndex = currentIndex;
     }
 
-    private bool ParseBoolean(out object? o)
+    return currentIndex > prevIndex;
+  }
+
+  private bool ParseString(out object? o)
+  {
+    Skip();
+    var prevIndex = currentIndex;
+    if (IsNotEnd() && ParseStringLiteral("\""))
     {
-        Skip();
-        var prevIndex = currentIndex;
-        o = null;
-
-        if (IsNotEnd())
-        {
-            if (ParseStringLiteral("true"))
-                o = true;
-            else if (ParseStringLiteral("false"))
-                o = false;
-            else
-                prevIndex = currentIndex;
-        }
-
-        return currentIndex > prevIndex;
+      o = string.Empty;
+    }
+    else
+    {
+      o = null;
+      return false;
     }
 
-    private bool ParseString(out object? o)
+    while (IsNotEnd())
     {
-        Skip();
-        var prevIndex = currentIndex;
-        if (IsNotEnd() && ParseStringLiteral("\""))
-        {
-            o = string.Empty;
-        }
-        else
-        {
-            o = null;
-            return false;
-        }
+      if (ParseStringLiteral("\""))
+      {
+        break;
+      }
 
-        while (IsNotEnd())
-        {
-            if (ParseStringLiteral("\""))
-            {
-                break;
-            }
-
-            o += GetCurrentChar().ToString();
-            currentIndex++;
-        }
-
-        return currentIndex > prevIndex;
+      o += GetCurrentChar().ToString();
+      currentIndex++;
     }
 
-    private bool ParseNum(out object? o)
+    return currentIndex > prevIndex;
+  }
+
+  private bool ParseNum(out object? o)
+  {
+    Skip();
+    var prevIndex = currentIndex;
+    while (IsNotEnd() && char.IsDigit(GetCurrentChar())) currentIndex++;
+    o = currentIndex > prevIndex ? int.Parse(input[prevIndex..currentIndex]) : null;
+    return currentIndex > prevIndex;
+  }
+
+  private void ParseUnary()
+  {
+    Skip();
+
+    if (!IsNotEnd() || !Operator.IsUnaryOperator(GetCurrentChar().ToString(), out var op)) return;
+    commandList.AddOperator(currentIndex, op);
+    currentIndex++;
+  }
+
+  private bool GetBinaryOperator(out string op)
+  {
+    Skip();
+
+    if (IsNotEnd() && currentIndex + 1 < input.Length &&
+        Operator.IsBinaryOperator(input.Substring(currentIndex, 2), out op))
     {
-        Skip();
-        var prevIndex = currentIndex;
-        while (IsNotEnd() && char.IsDigit(GetCurrentChar())) currentIndex++;
-        o = currentIndex > prevIndex ? int.Parse(input[prevIndex..currentIndex]) : null;
-        return currentIndex > prevIndex;
+      currentIndex += op.Length;
+      return true;
     }
 
-    private void ParseUnary()
-    {
-        Skip();
+    op = Operator.Empty;
+    return false;
+  }
 
-        if (!IsNotEnd() || !Operator.IsUnaryOperator(GetCurrentChar().ToString(), out var op)) return;
-        commandList.AddOperator(currentIndex, op);
+
+  private bool ParseStringLiteral(string literal)
+  {
+    Skip();
+
+    if (currentIndex + literal.Length <= input.Length &&
+        input.Substring(currentIndex, literal.Length).Equals(literal))
+    {
+      currentIndex += literal.Length;
+      return true;
+    }
+
+    return false;
+  }
+
+  private bool ParseWhile()
+  {
+    if (!ParseStringLiteral("while")) return false;
+    var i = commandList.GetCommandCount();
+    ParseExpression();
+    commandList.AddEndExpression(currentIndex);
+    commandList.AddIf(currentIndex, out var command1);
+
+    ParseBlock();
+
+    commandList.AddJump(currentIndex, out var command2);
+    command1.Value = commandList.GetCommandCount();
+    command2.Value = i;
+    return true;
+  }
+
+  private void ParseBlock()
+  {
+    if (!ParseStringLiteral("{")) throw new Exception($"Expected operator's block");
+    ParseOperators();
+    if (!ParseStringLiteral("}")) throw new Exception($"Unexpected end of block");
+  }
+
+  private void Skip()
+  {
+    while (IsNotEnd() && IsSymbol()) currentIndex++;
+
+    if (currentIndex < input.Length - 1
+        && GetCurrentChar() == '/'
+        && input.Substring(currentIndex, 1).Equals("/")
+       )
+    {
+      currentIndex += 2;
+      while (IsNotEnd() && GetCurrentChar() != '\n'
+                        && GetCurrentChar() != '\r'
+                        && GetCurrentChar() != '\t') currentIndex++;
+
+      if (IsNotEnd())
+      {
         currentIndex++;
-    }
-
-    private bool GetBinaryOperator(out string op)
-    {
         Skip();
-
-        if (IsNotEnd() && currentIndex + 1 < input.Length &&
-            Operator.IsBinaryOperator(input.Substring(currentIndex, 2), out op))
-        {
-            currentIndex += op.Length;
-            return true;
-        }
-
-        op = Operator.Empty;
-        return false;
+      }
     }
+  }
 
-
-    private bool ParseStringLiteral(string literal)
+  private bool IsSymbol()
+  {
+    return GetCurrentChar().ToString() switch
     {
-        Skip();
+      Symbol.Space or Symbol.Tab or Symbol.NewLine or Symbol.LineFeed => true,
+      _ => false
+    };
+  }
 
-        if (currentIndex + literal.Length <= input.Length &&
-            input.Substring(currentIndex, literal.Length).Equals(literal))
-        {
-            currentIndex += literal.Length;
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool ParseWhile()
-    {
-        if (!ParseStringLiteral("while")) return false;
-        var i = commandList.GetCommandCount();
-        ParseExpression();
-        commandList.AddEndExpression(currentIndex);
-        commandList.AddIf(currentIndex, out var command1);
-
-        ParseBlock();
-
-        commandList.AddJump(currentIndex, out var command2);
-        command1.Value = commandList.GetCommandCount();
-        command2.Value = i;
-        return true;
-    }
-
-    private void ParseBlock()
-    {
-        if (!ParseStringLiteral("{")) throw new Exception($"Expected operator's block");
-        ParseOperators();
-        if (!ParseStringLiteral("}")) throw new Exception($"Unexpected end of block");
-    }
-
-    private void Skip()
-    {
-        while (IsNotEnd() && IsSymbol()) currentIndex++;
-
-        if (currentIndex < input.Length - 1
-            && GetCurrentChar() == '/'
-            && input.Substring(currentIndex, 1).Equals("/")
-           )
-        {
-            currentIndex += 2;
-            while (IsNotEnd() && GetCurrentChar() != '\n'
-                              && GetCurrentChar() != '\r'
-                              && GetCurrentChar() != '\t') currentIndex++;
-
-            if (IsNotEnd())
-            {
-                currentIndex++;
-                Skip();
-            }
-        }
-    }
-
-    private bool IsSymbol()
-    {
-        return GetCurrentChar().ToString() switch
-        {
-            Symbol.Space or Symbol.Tab or Symbol.NewLine or Symbol.LineFeed => true,
-            _ => false
-        };
-    }
-
-    private bool IsNotEnd()
-    {
-        return currentIndex < input.Length;
-    }
+  private bool IsNotEnd()
+  {
+    return currentIndex < input.Length;
+  }
 }
