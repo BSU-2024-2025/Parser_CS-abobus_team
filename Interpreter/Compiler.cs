@@ -101,8 +101,10 @@ public class Compiler(string input)
                     }
                     else
                     {
+                        
                         i = ReturnFunc(ref funcName!, ref bp);
                         nestLevel--;
+                        
                     }
 
                     break;
@@ -120,6 +122,7 @@ public class Compiler(string input)
                     i = (int)command.Value! - 1; // increment in for
                     break;
                 case CommandType.CallFunction:
+                    PushOperator("(");
                     data.Push(i);
                     data.Push(funcName);
                     data.Push(bp);
@@ -154,7 +157,7 @@ public class Compiler(string input)
         int curIndex = (int)data.Pop()!;
         
         data.Push(result);
-        
+        PopOperator();
         return curIndex;
     }
 
