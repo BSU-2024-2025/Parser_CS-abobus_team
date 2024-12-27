@@ -532,7 +532,17 @@ public class Tests
             
             return x;
             """, ExpectedResult = 3)]
-  // not working
+  [TestCase("""
+            y = 0;
+
+            fun foo()
+            {
+              y = y + 1;
+              return y;
+            }
+            
+            return foo();
+            """, ExpectedResult = 1)]
   [TestCase("""
             fun foo(a)
             {
@@ -541,6 +551,72 @@ public class Tests
             
             return foo(3);
             """, ExpectedResult = 3)]
+  [TestCase("""
+            fun foo(a, b)
+            {
+              return a - b;
+            }
+            
+            return foo(3, 2);
+            """, ExpectedResult = 1)]
+  // not working
+  [TestCase("""
+            z = 3;
+
+            fun foo(a, b, c)
+            {
+              a = a * 10;
+              return a + b + c + z;
+            }
+            
+            return foo(100, 200, 300);
+            """, ExpectedResult = 1503)]
+  [TestCase("""
+            z = 3;
+
+            fun foo(a, b, c)
+            {
+              a = a * 10;
+              z = z * 10;
+              return a + b + c + z;
+            }
+            
+            return foo(100, 200, 300);
+            """, ExpectedResult = 1530)]
+  [TestCase("""
+
+            fun foo()
+            {
+              var c;
+              c = 300;
+              return c;
+            }
+            
+            return foo();
+            """, ExpectedResult = 300)]
+  [TestCase("""
+
+            fun foo()
+            {
+              var c, d;
+              c = 300;
+              d = 200;
+              return c + d;
+            }
+            
+            return foo();
+            """, ExpectedResult = 500)]
+  [TestCase("""
+            fun foo(a)
+            {
+              var c, d;
+              c = 300;
+              d = 200;
+              return c + d + a;
+            }
+            
+            return foo(100);
+            """, ExpectedResult = 600)]
   public object? TestFunctions(string input)
   {
     //var p = new Parser(input);

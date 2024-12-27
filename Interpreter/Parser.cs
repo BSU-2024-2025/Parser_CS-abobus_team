@@ -24,13 +24,13 @@ public class Parser(string input)
 
   public List<Command> Parse()
   {
-    var result = ParseOperators(true);
+    var result = ParseOperators(parseFunction: true);
     return commandList.GetCommands();
   }
 
   public List<Command> Parse(out bool success)
   {
-    success = ParseOperators(true);
+    success = ParseOperators(parseFunction: true);
     if (IsNotEnd())
     {
       success = false;
@@ -50,39 +50,45 @@ public class Parser(string input)
     if (!ParseStringLiteral("(")) throw new Exception("No open parentheses");
     var param = ParseName();
 
-    var func = functions[funcName];
+    func = functions[funcName];
     while (!string.IsNullOrEmpty(param))
     {
       func.AddLocal(param, true);
       if (ParseStringLiteral(","))
       {
         param = ParseName();
-        func.AddLocal(param, true);
+        //func.AddLocal(param, true);
         continue;
       }
       break;
     }
+
     if (!ParseStringLiteral(")")) throw new Exception("no close parentheses");
 
-    CalcParamOffset(funcName);
-
+    CalcParamOffset();
     commandList.AddJump(currentIndex, out var command2);
-    ParseBlock();
+    ParseBlock(true);
+
+    //CalcParamOffset();
     commandList.AddConstant(currentIndex, 0);
     commandList.AddEndExpression(currentIndex);
     commandList.AddReturn(currentIndex);
     command2.Value = commandList.GetCommandCount();
+    func = null;
+    funcName = null;
     return true;
   }
 
-  private void CalcParamOffset(string funcName)
+  private void CalcParamOffset()
   {
-    var func = functions[funcName];
-    int paramCount = 0;
-
+    ArgumentNullException.ThrowIfNull(func);
     foreach (var param in func.Locals)
     {
       if (param.Value.isParam)
+      {
+        param.Value.offset = (func.paramCount - func.localCount) - param.Value.offset + 3;
+      }
+      else
       {
         param.Value.offset = func.paramCount - param.Value.offset + 3;
       }
@@ -103,10 +109,15 @@ public class Parser(string input)
     return false;
   }
 
-  private bool ParseOperators(bool parseFunction = false)
+  private bool ParseOperators(bool parseFunction = false, bool parseVar = false)
   {
     while (IsNotEnd())
     {
+      if (ParseVar())
+      {
+        continue;
+      }
+
       if (ParseReturn())
       {
         continue;
@@ -139,6 +150,26 @@ public class Parser(string input)
     return !IsNotEnd();
   }
 
+  private bool ParseVar()
+  {
+    if (!ParseStringLiteral("var")) return false;
+    var param = ParseName();
+
+    func = functions[funcName];
+    while (!string.IsNullOrEmpty(param))
+    {
+      func.AddLocal(param, false);
+      if (ParseStringLiteral(","))
+      {
+        param = ParseName();
+        continue;
+      }
+      break;
+    }
+    if (!ParseStringLiteral(";")) throw new Exception("expected ';'");
+
+    return true;
+  }
 
   private bool ParseAssignOrProcedureCall()
   {
@@ -160,31 +191,61 @@ public class Parser(string input)
 
       if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
 
-      commandList.AddVariable(currentIndex, name);
-      commandList.AddAssign(currentIndex, name);
+
+      LocalItem local = null;
+      if (func != null)
+      {
+        func.Locals.TryGetValue(name, out local);
+      }
+      if (local == null)
+      {
+        //commandList.SetGlobalVariable(currentIndex, name);
+        commandList.SetGlobalVariable(currentIndex, name);
+      }
+      else
+      {
+        commandList.SetLocalVariable(currentIndex, local.offset);
+      }
+
+      //commandList.AddVariable(currentIndex, name);
+      //commandList.AddAssign(currentIndex, name);
       return true;
     }
+
     return true;
   }
 
-  private bool ParseAssign()
+  private void AddGlobalVariable(string name)
   {
-    var name = ParseName();
-
-    if (name == "") return false;
-
-    if (!ParseStringLiteral("=")) return false;
-
-    ParseExpression();
-    commandList.AddEndExpression(currentIndex);
-
-    if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-
-    commandList.AddVariable(currentIndex, name);
-    commandList.AddAssign(currentIndex, name);
-
-    return true;
+    if (!HasVariable(name))
+    {
+      variables.Add(name, null);
+    }
   }
+
+  private bool HasVariable(string variable)
+  {
+    return variables.ContainsKey(variable);
+  }
+
+  //private bool ParseAssign()
+  //{
+  //  var name = ParseName();
+  //
+  //  if (name == "") return false;
+  //
+  //  if (!ParseStringLiteral("=")) return false;
+  //
+  //  ParseExpression();
+  //  commandList.AddEndExpression(currentIndex);
+  //
+  //  if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+  //
+  //  commandList.AddVariable(currentIndex, name);
+  //  commandList.AddAssign(currentIndex, name);
+  //
+  //  return true;
+  //}
 
   private string ParseName()
   {
@@ -342,7 +403,19 @@ public class Parser(string input)
     }
     else
     {
-      commandList.AddConstVariable(currentIndex, name);
+      LocalItem local = null;
+      if (func != null)
+      {
+        func.Locals.TryGetValue(name, out local);
+      }
+      if (local == null)
+      {
+        commandList.GetGlobalVariable(currentIndex, name);
+      }
+      else
+      {
+        commandList.GetLocalVariable(currentIndex, local.offset);
+      }
     }
     return true;
   }
@@ -458,10 +531,10 @@ public class Parser(string input)
     return true;
   }
 
-  private void ParseBlock()
+  private void ParseBlock(bool parseVar = false)
   {
     if (!ParseStringLiteral("{")) throw new Exception($"Expected operator's block");
-    ParseOperators();
+    ParseOperators(parseVar: parseVar);
     if (!ParseStringLiteral("}")) throw new Exception($"Unexpected end of block");
   }
 

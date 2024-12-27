@@ -6,7 +6,7 @@ public enum CommandType
     EndExpression,
     Constant,
     Assign,
-    Variable,
+    //Variable,
     ConstVariable,
     Return,
     If,
@@ -15,4 +15,8 @@ public enum CommandType
     LocalVariable,
     CallFunction,
     PopStack,
+    SetLocal,
+    SetGlobal,
+    GetLocal,
+    GetGlobal
 }
