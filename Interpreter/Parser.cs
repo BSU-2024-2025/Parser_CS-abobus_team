@@ -43,33 +43,31 @@ public class Parser(string input)
   {
     if (!ParseStringLiteral("fun")) return false;
     var name = ParseName();
-    if (name == "") throw new Exception("Invalid function name");
-    //commandList.AddFunction(currentIndex, name);
+    if (name == "") throw new ApplicationException("Missing function name");
+    
     AddFunction(name);
     funcName = name;
-    if (!ParseStringLiteral("(")) throw new Exception("No open parentheses");
+    if (!ParseStringLiteral("(")) throw new ApplicationException("Expected '('");
     var param = ParseName();
 
     func = functions[funcName];
     while (!string.IsNullOrEmpty(param))
     {
-      func.AddLocal(param, true);
+      func.AddParam(param);
       if (ParseStringLiteral(","))
       {
         param = ParseName();
-        //func.AddLocal(param, true);
         continue;
       }
       break;
     }
 
-    if (!ParseStringLiteral(")")) throw new Exception("no close parentheses");
+    if (!ParseStringLiteral(")")) throw new Exception("Expected ')'");
+    func.CalcParamOffset();
 
-    CalcParamOffset();
     commandList.AddJump(currentIndex, out var command2);
-    ParseBlock(true);
-
-    //CalcParamOffset();
+    ParseBlock(parseVar: true);
+    
     commandList.AddConstant(currentIndex, 0);
     commandList.AddEndExpression(currentIndex);
     commandList.AddReturn(currentIndex);
@@ -78,23 +76,6 @@ public class Parser(string input)
     funcName = null;
     return true;
   }
-
-  private void CalcParamOffset()
-  {
-    ArgumentNullException.ThrowIfNull(func);
-    foreach (var param in func.Locals)
-    {
-      if (param.Value.isParam)
-      {
-        param.Value.offset = (func.paramCount - func.localCount) - param.Value.offset + 3;
-      }
-      else
-      {
-        param.Value.offset = func.paramCount - param.Value.offset + 3;
-      }
-    }
-  }
-
 
   private bool ParseProcedureCall()
   {
@@ -153,15 +134,15 @@ public class Parser(string input)
   private bool ParseVar()
   {
     if (!ParseStringLiteral("var")) return false;
-    var param = ParseName();
+    var name = ParseName();
 
     func = functions[funcName];
-    while (!string.IsNullOrEmpty(param))
+    while (!string.IsNullOrEmpty(name))
     {
-      func.AddLocal(param, false);
+      func.AddLocal(name);
       if (ParseStringLiteral(","))
       {
-        param = ParseName();
+        name = ParseName();
         continue;
       }
       break;

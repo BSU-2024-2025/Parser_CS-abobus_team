@@ -21,26 +21,26 @@ namespace Interpreter
       this.localCount = 0;
     }
 
-    public LocalDictionary()
+    public void AddParam(string varName)
     {
-      this.codeIndex = 0;
-      this.paramCount = 0;
-      this.localCount = 0;
+      Locals.Add(varName, new LocalItem(isParam: true, paramCount++));
+    }
+    public void AddLocal(string varName)
+    {
+      var offset = -localCount;
+      localCount++;
+      Locals.Add(varName, new LocalItem(isParam: false, offset));
     }
 
-    public void AddLocal(string varName, bool isParam)
+    public void CalcParamOffset()
     {
-      if (!isParam)
+      foreach (var param in Locals)
       {
-        localCount++;
+        if (param.Value.isParam)
+        {
+          param.Value.offset = paramCount - param.Value.offset + 3; // 3 => address to return, funcName, bp
+        }
       }
-      Locals.Add(varName, new LocalItem(isParam, paramCount++));
     }
-
-    //public LocalItem GetOffset(string varName)
-    //{
-    //  var list = locals[varName];
-    //  return list;
-    //}
   }
 }
