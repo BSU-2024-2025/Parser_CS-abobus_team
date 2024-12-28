@@ -171,8 +171,13 @@ public class Compiler(string input)
     funcName = (string)data.Pop()!;
     int curIndex = (int)data.Pop()!;
 
+    for (int i = 0; i < func.paramCount; i++)
+    {
+      data.Pop();
+    }
+
     data.Push(result);
-    PopOperator();
+    PopOperator();  // pop '('
     return curIndex;
   }
 

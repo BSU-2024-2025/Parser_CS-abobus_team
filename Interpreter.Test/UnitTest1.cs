@@ -583,12 +583,22 @@ public class Tests
             
             return foo(100, 200, 300);
             """, ExpectedResult = 1530)]
-    public object? TestFunctions(string input)
+  [TestCase("""
+            fun f1(a)
+            {
+              return a + 2;
+            }
+            
+            fun f2(n)
+            {
+              return f1(n + 1);
+            }
+            
+            return f2(5);
+            """, ExpectedResult = 8)]
+  public object? TestFunctions(string input)
     {
-        //var p = new Parser(input);
-        //var c = new Compiler(p.Parse());
-        var c = new Compiler(input);
-        return c.Compile();
+      return new Compiler(input).Compile();
     }
 
     [TestCase("""
@@ -627,8 +637,21 @@ public class Tests
             
             return foo(5, 2);
             """, ExpectedResult = 1003)]
-      public object? TestLocalVars(string input)
+  [TestCase("""
+            fun factorial(n)
+            {
+              if (n <= 1) {
+                return 1;
+              }
+              var x;
+              x = n;
+              return x * factorial(n - 1);
+            }
+            
+            return factorial(5);
+            """, ExpectedResult = 120)]
+  public object? TestLocalVars(string input)
     {
-        return new Compiler(input).Compile();
+      return new Compiler(input).Compile();
     }
 }

@@ -236,7 +236,7 @@ public class Parser(string input)
 
     if (IsNotEnd() && (char.IsAsciiLetter(GetCurrentChar()) || GetCurrentChar() == '_'))
     {
-      while (IsNotEnd() && (char.IsAsciiLetter(GetCurrentChar()) || GetCurrentChar() == '_')) currentIndex++;
+      while (IsNotEnd() && (char.IsAsciiLetterOrDigit(GetCurrentChar()) || GetCurrentChar() == '_')) currentIndex++;
 
       return currentIndex > prevIndex ? input[prevIndex..currentIndex] : "";
     }
@@ -354,10 +354,11 @@ public class Parser(string input)
 
   private bool ParseFunctionCall(string name)
   {
-    // commandList.AddCallFunction(currentIndex, name!);
     while (!ParseStringLiteral(")"))
     {
+      commandList.AddOperator(currentIndex, "(");
       ParseExpression();
+      commandList.AddOperator(currentIndex, ")");
       if (ParseStringLiteral(")")) break;
       if (ParseStringLiteral(","))
       {
