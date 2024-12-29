@@ -140,7 +140,8 @@ public class Parser(string input)
     func = functions[funcName];
     while (!string.IsNullOrEmpty(name))
     {
-      func.AddLocal(name);
+      if (!ParseAssign(name, isInitLocal:true))
+        func.AddLocal(name); 
       if (ParseStringLiteral(","))
       {
         name = ParseName();
@@ -170,14 +171,18 @@ public class Parser(string input)
     }
   }
 
-  private bool ParseAssign(string name, bool noParseDelimiter = false)
+  private bool ParseAssign(string name, bool isInitLocal = false)
   {
     if (!ParseStringLiteral("=")) return false;
 
     ParseExpression();
     commandList.AddEndExpression(currentIndex);
 
-    if (!noParseDelimiter)
+    if (isInitLocal)
+    {
+      func.AddLocal(name);
+    }
+    else
     {
       if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
     }

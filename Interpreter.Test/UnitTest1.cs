@@ -668,6 +668,48 @@ public class Tests
             
             return x * factorial(5);
             """, ExpectedResult = 12000)]
+  [TestCase("""
+            x = 100;
+            fun f()
+            {
+              var x = 200;
+              return x;
+            }
+            
+            return f();
+            """, ExpectedResult = 200)]
+  [TestCase("""
+            x = 100;
+            fun f()
+            {
+              var x = 200, y =300;
+              return x + y;
+            }
+            
+            return f();
+            """, ExpectedResult = 500)]
+  [TestCase("""
+            x = 100;
+            fun f()
+            {
+              var x = x + 10, y = x + 1;
+              return y;
+            }
+            
+            return f();
+            """, ExpectedResult = 111)]
+  [TestCase("""
+            x = 100;
+            fun f()
+            {
+              var x = x + 10, y = x + 1;
+              var z = y * 100;
+              z = z + 11;
+              return z;
+            }
+            
+            return f();
+            """, ExpectedResult = 11111)]
   public object? TestLocalVars(string input)
   {
     return new Compiler(input).Compile();
