@@ -718,10 +718,94 @@ public class Tests
             
             return -x + (-y);
             """, ExpectedResult = 2.067e1)]
+  [TestCase("""
+            x = -2.5;
+            y =  0.5;
+            
+            if (x < y) {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if (-3.3 > (-5)) {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe" + 5555 > "qwe") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe" + "5555" > "qwe") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe" == "qwe") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe2" > "qwe") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe" < "qwe2") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe" <= "qwe2") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if ("qwe3" >= "qwe2") {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            if (!("qwe" >= "qwe2")) {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            x = "qw";
+            x = x + "e";
+            if ("qwe" == x) {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            x = "qwe";
+            y = x + "1";
+            if (x < y) {
+              return 1;
+            }
+            """, ExpectedResult = 1)]
   [DefaultFloatingPointTolerance(1e-12)]
   public object? TestFloat(string input)
   {
     return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
+            if (-3.3 && (-5)) {
+              return 1;
+            }
+            """)]
+  [TestCase("""
+              return "qwe" * 5;
+            """)]
+  [TestCase("""
+              return "qwe" - 5;
+            """)]
+  [DefaultFloatingPointTolerance(1e-12)]
+  public void TestRuntimeBinderException(string input) 
+  {
+    Assert.That(() => new Compiler(input).Compile(), Throws.Exception); 
   }
 
 }

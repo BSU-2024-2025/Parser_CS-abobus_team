@@ -271,6 +271,13 @@ public class Compiler(string input)
         {
           op2 = PopData()!;
           op1 = PopData()!;
+
+          if (op2 is string && op1 is string)
+          {
+            PushData(((string)op1).CompareTo(op2) > 0);
+            break;
+          }
+
           PushData(op1 > op2);
           break;
         }
@@ -278,6 +285,13 @@ public class Compiler(string input)
         {
           op2 = PopData()!;
           op1 = PopData()!;
+
+          if (op2 is string && op1 is string)
+          {
+            PushData(((string)op1).CompareTo(op2) < 0);
+            break;
+          }
+
           PushData(op1 < op2);
           break;
         }
@@ -285,6 +299,13 @@ public class Compiler(string input)
         {
           op2 = PopData()!;
           op1 = PopData()!;
+
+          if (op2 is string && op1 is string)
+          {
+            PushData( ((string)op1).CompareTo(op2) >= 0);
+            break;
+          }
+
           PushData(op1 >= op2);
           break;
         }
@@ -292,6 +313,13 @@ public class Compiler(string input)
         {
           op2 = PopData()!;
           op1 = PopData()!;
+
+          if (op2 is string && op1 is string)
+          {
+            PushData(((string)op1).CompareTo(op2) <= 0);
+            break;
+          }
+
           PushData(op1 <= op2);
           break;
         }
