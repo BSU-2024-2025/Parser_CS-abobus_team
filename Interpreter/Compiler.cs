@@ -47,9 +47,9 @@ public class Compiler(string input)
           }
         case CommandType.GetGlobal:
           {
-            if (parser.HasVariable((string)command.Value!))
+            if (parser.HasGlobalVariable((string)command.Value!))
             {
-              var varValue = GetVariable((string)command.Value!);
+              var varValue = GetGlobalVariable((string)command.Value!);
               if (varValue != null)
               {
                 PushData(varValue);
@@ -453,7 +453,7 @@ public class Compiler(string input)
     return operations.Peek();
   }
 
-  private object? GetVariable(string name)
+  private object? GetGlobalVariable(string name)
   {
     return parser.variables[name];
   }

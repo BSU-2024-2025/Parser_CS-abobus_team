@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Interpreter;
@@ -169,23 +170,26 @@ public class Parser(string input)
     }
   }
 
-  private bool ParseAssign(string name)
+  private bool ParseAssign(string name, bool noParseDelimiter = false)
   {
     if (!ParseStringLiteral("=")) return false;
 
     ParseExpression();
     commandList.AddEndExpression(currentIndex);
 
-    if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-
-    LocalItem local = null;
-    if (func != null)
+    if (!noParseDelimiter)
     {
-      func.Locals.TryGetValue(name, out local);
+      if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
     }
-    if (local == null)
+
+    int? offset = GetLocalVariableOffset(name, func);
+    if (offset != null)
     {
-      if (!HasVariable(name))
+      commandList.SetLocalVariable(currentIndex, (int)offset);
+    }
+    else 
+    {
+      if (!HasGlobalVariable(name))
       {
         if (func == null)
         {
@@ -198,36 +202,26 @@ public class Parser(string input)
       }
       commandList.SetGlobalVariable(currentIndex, name);
     }
-    else
-    {
-      commandList.SetLocalVariable(currentIndex, local.offset);
-    }
     return true;
   }
 
-  public bool HasVariable(string variable)
+  public bool HasGlobalVariable(string variable)
   {
     return variables.ContainsKey(variable);
   }
-
-  //private bool ParseAssign()
-  //{
-  //  var name = ParseName();
-  //
-  //  if (name == "") return false;
-  //
-  //  if (!ParseStringLiteral("=")) return false;
-  //
-  //  ParseExpression();
-  //  commandList.AddEndExpression(currentIndex);
-  //
-  //  if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-  //
-  //  commandList.AddVariable(currentIndex, name);
-  //  commandList.AddAssign(currentIndex, name);
-  //
-  //  return true;
-  //}
+  
+  public int? GetLocalVariableOffset(string variable, LocalDictionary func)
+  {
+    if (func != null)
+    {
+      func.Locals.TryGetValue(variable, out var local);
+      if (local != null)
+      {
+        return local.offset;
+      }
+    }
+    return null;
+  }
 
   private string ParseName()
   {
@@ -386,18 +380,14 @@ public class Parser(string input)
     }
     else
     {
-      LocalItem local = null;
-      if (func != null)
+      int? offset = GetLocalVariableOffset(name, func);
+      if (offset != null)
       {
-        func.Locals.TryGetValue(name, out local);
+        commandList.GetLocalVariable(currentIndex, (int)offset);
       }
-      if (local == null)
+      else 
       {
         commandList.GetGlobalVariable(currentIndex, name);
-      }
-      else
-      {
-        commandList.GetLocalVariable(currentIndex, local.offset);
       }
     }
     return true;
