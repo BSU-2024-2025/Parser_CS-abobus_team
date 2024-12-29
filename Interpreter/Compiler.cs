@@ -47,17 +47,21 @@ public class Compiler(string input)
           }
         case CommandType.GetGlobal:
           {
-            if (HasVariable((string)command.Value!))
+            if (parser.HasVariable((string)command.Value!))
             {
-              var variable = GetVariable((string)command.Value!);
-              if (variable != null)
+              var varValue = GetVariable((string)command.Value!);
+              if (varValue != null)
               {
-                PushData(variable);
+                PushData(varValue);
+              }
+              else
+              {
+                throw new ApplicationException($"Global variable '{command.Value}' is not defined.");
               }
             }
             else
             {
-              throw new Exception($"Variable '{command.Value}' is not defined.");
+              throw new ApplicationException($"Global variable '{command.Value}' is not found.");
             }
 
             break;
@@ -449,18 +453,8 @@ public class Compiler(string input)
     return operations.Peek();
   }
 
-  private bool HasVariable(string variable)
-  {
-    return parser.variables.ContainsKey(variable);
-  }
-
   private object? GetVariable(string name)
   {
-    if (!HasVariable(name))
-    {
-      return null;
-    }
-
     return parser.variables[name];
   }
 

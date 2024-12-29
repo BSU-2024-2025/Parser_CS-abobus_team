@@ -334,6 +334,7 @@ public class Tests
              return name() + 3;
             """, ExpectedResult = 6)]
   [TestCase("""
+             x = 2;
              fun foo()
              {
                  x = 1;
@@ -342,26 +343,18 @@ public class Tests
              return foo();
             """, ExpectedResult = 1)]
   [TestCase("""
-             fun foo()
-             {
-                 x = 1;
-                 y = 2;
-                 return x + y;
-             }
-             return foo() + 3;
-            """, ExpectedResult = 6)]
-  [TestCase("""
-            x = 4;
-             fun foo()
-             {
-                 x = 1;
-                 y = 2;
-                 return x + y;
-             }
-             return foo() + 3;
-            """, ExpectedResult = 6)]
-  [TestCase("""
+             x = 111;
+             y = 2222;
             
+             fun foo()
+             {
+                 x = 1;
+                 y = 2;
+                 return x + y;
+             }
+             return foo() + 3;
+            """, ExpectedResult = 6)]
+  [TestCase("""
             fun moo()
             {
             }
@@ -434,6 +427,8 @@ public class Tests
             return x;
             """, ExpectedResult = 1)]
   [TestCase("""
+            x = 2;
+            
             fun foo()
             {
                 x = 1 + 2 * 3;
@@ -451,11 +446,6 @@ public class Tests
             x = x + 5;
             return foo();
             """, ExpectedResult = 7)]
-  [TestCase("""
-            x = 3;
-            x = x + 5;
-            return x;
-            """, ExpectedResult = 8)]
   [TestCase("""
             fun foo()
             {

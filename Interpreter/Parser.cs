@@ -160,54 +160,52 @@ public class Parser(string input)
     {
       ParseFunctionCall(name);
       if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-      commandList.AddPopStack(currentIndex);
+      commandList.AddPopStack(currentIndex); // pop returned value
       return true;
     }
     else
     {
-      if (!ParseStringLiteral("=")) return false;
-
-      ParseExpression();
-      commandList.AddEndExpression(currentIndex);
-
-      if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
-
-
-      LocalItem local = null;
-      if (func != null)
-      {
-        func.Locals.TryGetValue(name, out local);
-      }
-      if (local == null)
-      {
-        if (!HasVariable(name))
-        {
-          if (func == null)
-          {
-            variables.Add(name, null);
-          } 
-          else
-          {
-            throw new ApplicationException("Cannot create global variable in the function.");
-          }
-        }
-        commandList.SetGlobalVariable(currentIndex, name);
-      }
-      else
-      {
-        commandList.SetLocalVariable(currentIndex, local.offset);
-      }
-
-      //commandList.AddVariable(currentIndex, name);
-      //commandList.AddAssign(currentIndex, name);
-      return true;
+      return ParseAssign(name);
     }
+  }
 
+  private bool ParseAssign(string name)
+  {
+    if (!ParseStringLiteral("=")) return false;
+
+    ParseExpression();
+    commandList.AddEndExpression(currentIndex);
+
+    if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+
+    LocalItem local = null;
+    if (func != null)
+    {
+      func.Locals.TryGetValue(name, out local);
+    }
+    if (local == null)
+    {
+      if (!HasVariable(name))
+      {
+        if (func == null)
+        {
+          variables.Add(name, null);
+        }
+        else
+        {
+          throw new ApplicationException("Cannot create global variable in the function.");
+        }
+      }
+      commandList.SetGlobalVariable(currentIndex, name);
+    }
+    else
+    {
+      commandList.SetLocalVariable(currentIndex, local.offset);
+    }
     return true;
   }
 
-  
-  private bool HasVariable(string variable)
+  public bool HasVariable(string variable)
   {
     return variables.ContainsKey(variable);
   }
