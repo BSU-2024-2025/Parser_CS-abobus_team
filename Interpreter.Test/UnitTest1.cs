@@ -596,6 +596,21 @@ public class Tests
             
             return f2(5);
             """, ExpectedResult = 8)]
+  [TestCase("""
+            fun sub(a,b)
+            {
+              return a - b;
+            }
+            
+            fun div(a,b)
+            {
+              return a / b ;
+            }
+
+            return sub(5 * div(6,3) + sub(70,2), div( 4 + sub(9,1)*2, 10/2 ) ); 
+
+            """, ExpectedResult = 74)]
+  // sub(     10     +     68,     div( 4     + 16,      5) ) = 78 - 20/5 = 74
   public object? TestFunctions(string input)
     {
       return new Compiler(input).Compile();
@@ -651,7 +666,62 @@ public class Tests
             return factorial(5);
             """, ExpectedResult = 120)]
   public object? TestLocalVars(string input)
-    {
-      return new Compiler(input).Compile();
-    }
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
+            x = 5;
+            y = 2.0;
+            
+            return x/y;
+            """, ExpectedResult = 2.5)]
+  [TestCase("""
+            x = 7;
+            y = 3.5;
+            
+            return x/y;
+            """, ExpectedResult = 2.0)]
+  [TestCase("""
+            x = 7e10;
+            y = 3.5e10;
+            
+            return x/y;
+            """, ExpectedResult = 2.0)]
+  [TestCase("""
+            x = 7e-10;
+            y = 3.5e-10;
+            
+            return x/y;
+            """, ExpectedResult = 2.0)]
+  [TestCase("""
+            x = 7e-10;
+            y = 3.5e1;
+            
+            return x/y;
+            """, ExpectedResult = 2.0e-11)]
+  [TestCase("""
+            x = 2.5e-10;
+            y = 2.5e+10;
+            
+            return x * y;
+            """, ExpectedResult = 6.25)]
+  [TestCase("""
+            x = 2.567e1;
+            y = 0.066e+1;
+            
+            return x - y;
+            """, ExpectedResult = 2.501e1)]
+  [TestCase("""
+            x = -2.567e1;
+            y =  0.500e1;
+            
+            return -x + (-y);
+            """, ExpectedResult = 2.067e1)]
+  [DefaultFloatingPointTolerance(1e-12)]
+  public object? TestFloat(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
 }

@@ -193,52 +193,67 @@ public class Compiler(string input)
     return func.codeIndex;
   }
 
+
   private void Execute(string operation)
   {
+    dynamic op2 = 0;
+    dynamic op1 = 0;
+
     switch (operation)
     {
       case Operator.Add:
         {
-          var operand2 = PopData()!;
-          var operand1 = PopData()!;
-          if (operand1 is int && operand2 is int)
-          {
-            PushData((int?)operand1 + (int?)operand2);
-            break;
-          }
+          //var operand2 = PopData()!;
+          //var operand1 = PopData()!;
+          //if (operand1 is int && operand2 is int)
+          //{
+          //  PushData((int?)operand1 + (int?)operand2);
+          //  break;
+          //}
 
-          if (operand1 is float ||
-              operand2 is float ||
-              operand1 is double ||
-              operand2 is double ||
-              operand1 is decimal ||
-              operand2 is decimal ||
-              operand1 is int ||
-              operand2 is int
-             )
-          {
-            PushData((double?)operand1 + (double?)operand2);
-            break;
-          }
+          //if (operand1 is float ||
+          //    operand2 is float ||
+          //    operand1 is double ||
+          //    operand2 is double ||
+          //    operand1 is decimal ||
+          //    operand2 is decimal ||
+          //    operand1 is int ||
+          //    operand2 is int
+          //   )
+          //{
+          //  PushData((double?)operand1 + (double?)operand2);
+          //  break;
+          //}
 
-          PushData((string?)operand1 + (string?)operand2);
+          //PushData((string?)operand1 + (string?)operand2);
+
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 + op2);
+
           break;
         }
       case Operator.Subtract:
         {
-          PushData(-(int?)PopData()! + (int?)PopData()!);
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 - op2);
           break;
         }
       case Operator.Multiply:
         {
-          PushData((int?)PopData()! * (int?)PopData()!);
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 * op2);
           break;
         }
       case Operator.Divide:
-        PushData(1 / (int?)PopData()! * (int?)PopData()!);
+        op2 = PopData()!;
+        op1 = PopData()!;
+        PushData(op1 / op2);
         break;
       case Operator.UnaryMinus:
-        PushData(-(int?)PopData()!);
+        PushData(-(dynamic)PopData()!);
         break;
       case Operator.Not:
         {
@@ -254,30 +269,30 @@ public class Compiler(string input)
         }
       case Operator.MoreThan:
         {
-          var operand = PopData();
-          var operand2 = PopData();
-          PushData((int?)operand < (int?)operand2);
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 > op2);
           break;
         }
       case Operator.LessThan:
         {
-          var operand1 = PopData();
-          var operand2 = PopData();
-          PushData((int?)operand1 > (int?)operand2);
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 < op2);
           break;
         }
       case Operator.GreaterThanOrEqual:
         {
-          var operand1 = PopData();
-          var operand2 = PopData();
-          PushData((int?)operand1 <= (int?)operand2);
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 >= op2);
           break;
         }
       case Operator.LessThanOrEqual:
         {
-          var operand1 = PopData();
-          var operand2 = PopData();
-          PushData((int?)operand1 >= (int?)operand2);
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 <= op2);
           break;
         }
       case Operator.Equal:
@@ -290,12 +305,16 @@ public class Compiler(string input)
         }
       case Operator.And:
         {
-          var operand1 = PopData();
-          var operand2 = PopData();
-          if (operand1 is bool && operand2 is bool)
-          {
-            PushData((bool)operand2 && (bool)operand1);
-          }
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 && op2);
+
+          //var operand1 = PopData();
+          //var operand2 = PopData();
+          //if (operand1 is bool && operand2 is bool)
+          //{
+          //  PushData((bool)operand2 && (bool)operand1);
+          //}
 
           break;
         }
@@ -309,12 +328,17 @@ public class Compiler(string input)
         }
       case Operator.Or:
         {
-          var operand1 = PopData();
-          var operand2 = PopData();
-          if (operand1 is bool && operand2 is bool)
-          {
-            PushData((bool)operand2 || (bool)operand1);
-          }
+
+          op2 = PopData()!;
+          op1 = PopData()!;
+          PushData(op1 || op2);
+
+          //var operand1 = PopData();
+          //var operand2 = PopData();
+          //if (operand1 is bool && operand2 is bool)
+          //{
+          //  PushData((bool)operand2 || (bool)operand1);
+          //}
 
           break;
         }

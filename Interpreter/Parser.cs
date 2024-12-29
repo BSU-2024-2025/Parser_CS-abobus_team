@@ -449,12 +449,44 @@ public class Parser(string input)
     return currentIndex > prevIndex;
   }
 
-  private bool ParseNum(out object? o)
+  private bool ParseNum(out object? num)
   {
     Skip();
     var prevIndex = currentIndex;
-    while (IsNotEnd() && char.IsDigit(GetCurrentChar())) currentIndex++;
-    o = currentIndex > prevIndex ? int.Parse(input[prevIndex..currentIndex]) : null;
+    num = null;
+    while (IsNotEnd() && char.IsDigit(GetCurrentChar())) 
+      currentIndex++;
+    if (currentIndex > prevIndex) 
+    {
+      bool hasFract = false;
+      bool hasExp = false;
+
+      if (GetCurrentChar() == '.')
+      {
+        currentIndex++;
+        var saveIndex = currentIndex;
+        while (IsNotEnd() && char.IsDigit(GetCurrentChar()))
+          currentIndex++;
+        if (currentIndex == saveIndex) throw new ApplicationException("Invalid number format");
+        hasFract = true;
+      }
+      if (GetCurrentChar() == 'e' || GetCurrentChar() == 'E')
+      {
+        currentIndex++;
+        if (GetCurrentChar() == '-' || GetCurrentChar() == '+')
+          currentIndex++;
+        var saveIndex = currentIndex;
+        while (IsNotEnd() && char.IsDigit(GetCurrentChar()))
+          currentIndex++;
+        if (currentIndex == prevIndex) throw new ApplicationException("Invalid number format");
+        hasExp = true;
+      }
+      if (!hasFract && !hasExp)
+        num = int.Parse(input[prevIndex..currentIndex]);
+      else
+        num = double.Parse(input[prevIndex..currentIndex]);
+    }
+
     return currentIndex > prevIndex;
   }
 
@@ -526,7 +558,7 @@ public class Parser(string input)
 
     if (currentIndex < input.Length - 1
         && GetCurrentChar() == '/'
-        && input.Substring(currentIndex, 1).Equals("/")
+        && input.Substring(currentIndex, 2).Equals("//")
        )
     {
       currentIndex += 2;
