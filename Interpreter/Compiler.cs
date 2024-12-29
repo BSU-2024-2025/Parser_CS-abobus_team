@@ -474,13 +474,6 @@ public class Compiler(string input)
 
   private void SetGlobalVariable(string name, object? value)
   {
-    if (HasVariable(name))
-    {
-      parser.variables[name] = value;
-    }
-    else
-    {
-      parser.variables.Add(name, value);
-    }
+    parser.variables[name] = value;
   }
 }

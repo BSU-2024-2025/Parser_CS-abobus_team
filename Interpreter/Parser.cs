@@ -180,7 +180,17 @@ public class Parser(string input)
       }
       if (local == null)
       {
-        //commandList.SetGlobalVariable(currentIndex, name);
+        if (!HasVariable(name))
+        {
+          if (func == null)
+          {
+            variables.Add(name, null);
+          } 
+          else
+          {
+            throw new ApplicationException("Cannot create global variable in the function.");
+          }
+        }
         commandList.SetGlobalVariable(currentIndex, name);
       }
       else
@@ -196,14 +206,7 @@ public class Parser(string input)
     return true;
   }
 
-  private void AddGlobalVariable(string name)
-  {
-    if (!HasVariable(name))
-    {
-      variables.Add(name, null);
-    }
-  }
-
+  
   private bool HasVariable(string variable)
   {
     return variables.ContainsKey(variable);

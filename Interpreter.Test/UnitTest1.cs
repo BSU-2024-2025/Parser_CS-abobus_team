@@ -405,7 +405,6 @@ public class Tests
             y = foo();
             return x + y;
             """, ExpectedResult = 3)]
-
   [TestCase("""
             fun foo()
             {
@@ -665,6 +664,20 @@ public class Tests
             
             return factorial(5);
             """, ExpectedResult = 120)]
+  [TestCase("""
+            x = 100;
+            fun factorial(n)
+            {
+              if (n <= 1) {
+                return 1;
+              }
+              var x;
+              x = n;
+              return x * factorial(n - 1);
+            }
+            
+            return x * factorial(5);
+            """, ExpectedResult = 12000)]
   public object? TestLocalVars(string input)
   {
     return new Compiler(input).Compile();
@@ -731,6 +744,12 @@ public class Tests
               return 1;
             }
             """, ExpectedResult = 1)]
+  [DefaultFloatingPointTolerance(1e-12)]
+  public object? TestFloat(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
   [TestCase("""
             if ("qwe" + 5555 > "qwe") {
               return 1;
@@ -785,10 +804,23 @@ public class Tests
               return 1;
             }
             """, ExpectedResult = 1)]
-  [DefaultFloatingPointTolerance(1e-12)]
-  public object? TestFloat(string input)
+  public object? TestStringCompare(string input)
   {
     return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
+            fun f()
+            {
+              x = 1;
+              return x;
+            }
+            
+            return f();
+            """)]
+  public void TestCreateGlobalVarInFuncException(string input)
+  {
+    Assert.That(() => new Compiler(input).Compile(), Throws.Exception);
   }
 
   [TestCase("""
