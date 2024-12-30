@@ -170,6 +170,16 @@ public class Parser(string input)
     }
   }
 
+  private bool ParseArrayIndex(string name)
+  {
+    commandList.AddOperator(currentIndex, "(");
+    if (!ParseExpression()) throw new Exception("Unexpected end of expression");
+    commandList.AddOperator(currentIndex, ")");
+    if (!ParseStringLiteral("]")) throw new Exception("Unexpected end of expression");
+    commandList.GetArrayGlobal(currentIndex, name);
+    return true;
+  }
+
   private bool ParseAssign(string name, bool isInitLocal = false)
   {
     if (!ParseStringLiteral("=")) return false;
@@ -427,6 +437,9 @@ public class Parser(string input)
     if (ParseStringLiteral("("))
     {
       ParseFunctionCall(name);
+    }else if (ParseStringLiteral("["))
+    {
+      ParseArrayIndex(name);
     }
     else
     {

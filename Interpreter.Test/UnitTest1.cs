@@ -888,12 +888,31 @@ public class Tests
   }
 
   [TestCase("""
-                x = [];
                 x = [1, 2, 3];
-                //y = x[0];
+                return x[0];
                 //delete(x,1);
                 //push(x,1);
-            """, ExpectedResult = 0)]
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            x = 1;
+            fun f()
+            {
+              var x = 200, y =300;
+              return x + y;
+            }
+            x = [1, 2, f()];
+            return x[2];
+            """, ExpectedResult = 500)]
+  [TestCase("""
+            x = 1;
+            fun f()
+            {
+              var y =300;
+              return x + y;
+            }
+            x = [1, 2, f()];
+            return x[2];
+            """, ExpectedResult = 301)]
   public object? TestArray(string input)
   {
     return new Compiler(input).Compile();

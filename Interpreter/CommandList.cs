@@ -127,4 +127,8 @@ public class CommandList
     commands.Add(new Command(currentIndex, CommandType.SetArrayGlobal, name));
   }
 
+  public void GetArrayGlobal(int currentIndex, string name)
+  {
+    commands.Add(new Command(currentIndex, CommandType.GetArrayGlobal, name));
+  }
 }

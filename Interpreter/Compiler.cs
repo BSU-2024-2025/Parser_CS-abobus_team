@@ -115,8 +115,17 @@ public class Compiler(string input)
           {
             a.Add(PopData());
           }
-          SetArrayGlobal((string)command.Value!);
+          SetArrayGlobal((string)command.Value!, a);
+          bp = data.Count;
           break;
+        case CommandType.GetArrayGlobal:
+          {
+            var index = (int)PopData()!;
+            var x = (string)command.Value!;
+            var d = (int)GetGlobalVariable(x)!;
+            PushData(data.PeekByIndex(bp - d + index)!);
+            break;
+          }
         case CommandType.Return:
         case CommandType.Return0:
           if (nestLevel == 0 && GetOperatorsLength() != 0)
@@ -170,10 +179,15 @@ public class Compiler(string input)
 
     return null;
   }
+  
 
-  private void SetArrayGlobal(string commandValue)
+  private void SetArrayGlobal(string name, ArrayList a)
   {
-    throw new NotImplementedException();
+    parser.variables[name] = a.Count;
+    for (var i = a.Count - 1; i >= 0; i--)
+    {
+      data.Push(a[i]);
+    }
   }
 
   private int ReturnFunc(ref string funcName, ref int bp, object? result)
