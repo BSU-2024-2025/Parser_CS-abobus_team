@@ -173,10 +173,18 @@ public class Parser(string input)
   private bool ParseAssign(string name, bool isInitLocal = false)
   {
     if (!ParseStringLiteral("=")) return false;
-
-    ParseExpression();
-    commandList.AddEndExpression(currentIndex);
-
+    var isArray = false;
+    if (ParseStringLiteral("["))
+    {
+      ParseArray(name);
+      isArray = true;
+    }
+    else
+    {
+      ParseExpression();
+      commandList.AddEndExpression(currentIndex);
+    }
+    
     if (isInitLocal)
     {
       func.AddLocal(name);
@@ -188,7 +196,14 @@ public class Parser(string input)
 
     if (TryGetLocalVariableOffset(name, func, out var offset))
     {
-      commandList.SetLocalVariable(currentIndex, offset);
+      if (isArray)
+      {
+        commandList.SetArrayLocal(currentIndex, offset);
+      }
+      else
+      {
+        commandList.SetLocalVariable(currentIndex, offset);
+      }
     }
     else 
     {
@@ -203,8 +218,39 @@ public class Parser(string input)
           throw new ApplicationException("Cannot create global variable in the function.");
         }
       }
-      commandList.SetGlobalVariable(currentIndex, name);
+
+      if (isArray)
+      {
+        commandList.SetArrayGlobal(currentIndex, name);
+      }
+      else
+      {
+        commandList.SetGlobalVariable(currentIndex, name);
+      }
     }
+    return true;
+  }
+
+  private bool ParseArray(string name)
+  {
+    var n = 0;
+    while (!ParseStringLiteral("]"))
+    {
+      commandList.AddOperator(currentIndex, "(");
+      ParseExpression();
+      n++;
+      commandList.AddOperator(currentIndex, ")");
+      if (ParseStringLiteral("]")) break;
+      if (ParseStringLiteral(","))
+      {
+        continue;
+      }
+      else
+      {
+        throw new Exception("invalid array");
+      }
+    }
+    commandList.AddConstant(currentIndex, n);
     return true;
   }
 

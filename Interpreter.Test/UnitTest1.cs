@@ -887,4 +887,15 @@ public class Tests
     Assert.That(() => new Compiler(input).Compile(), Throws.Exception); 
   }
 
+  [TestCase("""
+                x = [];
+                x = [1, 2, 3];
+                //y = x[0];
+                //delete(x,1);
+                //push(x,1);
+            """, ExpectedResult = 0)]
+  public object? TestArray(string input)
+  {
+    return new Compiler(input).Compile();
+  }
 }

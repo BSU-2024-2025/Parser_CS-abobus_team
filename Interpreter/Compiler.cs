@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Specialized;
 
 namespace Interpreter;
@@ -107,6 +108,15 @@ public class Compiler(string input)
         case CommandType.SetGlobal:
           SetGlobalVariable((string)command.Value!, PopData());
           break;
+        case CommandType.SetArrayGlobal:
+          var size = (int)PopData()!;
+          var a = new ArrayList();
+          for (var j = 0; j < size; j++)
+          {
+            a.Add(PopData());
+          }
+          SetArrayGlobal((string)command.Value!);
+          break;
         case CommandType.Return:
         case CommandType.Return0:
           if (nestLevel == 0 && GetOperatorsLength() != 0)
@@ -159,6 +169,11 @@ public class Compiler(string input)
 
 
     return null;
+  }
+
+  private void SetArrayGlobal(string commandValue)
+  {
+    throw new NotImplementedException();
   }
 
   private int ReturnFunc(ref string funcName, ref int bp, object? result)

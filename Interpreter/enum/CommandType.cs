@@ -19,5 +19,7 @@ public enum CommandType
     SetLocal,
     SetGlobal,
     GetLocal,
-    GetGlobal
+    GetGlobal,
+    SetArrayGlobal,
+    SetArrayLocal
 }
