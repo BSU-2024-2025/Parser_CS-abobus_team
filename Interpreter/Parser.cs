@@ -26,6 +26,7 @@ public class Parser(string input)
   public List<Command> Parse()
   {
     var result = ParseOperators(parseFunction: true);
+    commandList.AddReturn0(currentIndex);
     return commandList.GetCommands();
   }
 
@@ -69,9 +70,6 @@ public class Parser(string input)
     commandList.AddJump(currentIndex, out var command2);
     ParseBlock(parseVar: true);
     
-    //commandList.AddConstant(currentIndex, 0);
-    //commandList.AddEndExpression(currentIndex);
-    //commandList.AddReturn(currentIndex);
     commandList.AddReturn0(currentIndex);
     command2.Value = commandList.GetCommandCount();
     func = null;
@@ -252,7 +250,7 @@ public class Parser(string input)
 
     if (ParseStringLiteral(";"))
     {
-      commandList.AddReturn(currentIndex);
+      commandList.AddReturn0(currentIndex);
       return true;
     }
 

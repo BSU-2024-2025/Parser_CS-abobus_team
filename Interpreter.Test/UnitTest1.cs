@@ -79,7 +79,7 @@ public class Tests
               """, ExpectedResult = -1)]
     [TestCase("""
               x = true;
-              """, ExpectedResult = null)]
+              """, ExpectedResult = 0)]
     [TestCase("""
               x = false;
               return x;
@@ -302,8 +302,20 @@ public class Tests
                fun foo()
                {
                }
+              """, ExpectedResult = 0)]
+  [TestCase("""
+               fun foo()
+               {
+               }
                return;
               """, ExpectedResult = 0)]
+  [TestCase("""
+            fun f()
+            {
+              return;
+            }
+            return f();
+            """, ExpectedResult = 0)]
   [TestCase("""
                fun foo()
                {
