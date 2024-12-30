@@ -36,6 +36,10 @@ public class CommandList
   {
     Add(index, CommandType.Return);
   }
+  public void AddReturn0(int index)
+  {
+    Add(index, CommandType.Return0);
+  }
   public void AddAssign(int index, object value)
   {
     Add(index, CommandType.Assign, value);

@@ -9,6 +9,7 @@ public enum CommandType
     //Variable,
     ConstVariable,
     Return,
+    Return0,
     If,
     Function,
     Jump,

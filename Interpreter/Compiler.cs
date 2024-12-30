@@ -108,6 +108,7 @@ public class Compiler(string input)
           SetGlobalVariable((string)command.Value!, PopData());
           break;
         case CommandType.Return:
+        case CommandType.Return0:
           if (nestLevel == 0 && GetOperatorsLength() != 0)
           {
             throw new Exception($"Not empty operators stack.");
@@ -119,8 +120,9 @@ public class Compiler(string input)
           }
           else
           {
+            var result = (command.CommandType == CommandType.Return0 ? 0 : data.Pop());
 
-            i = ReturnFunc(ref funcName!, ref bp);
+            i = ReturnFunc(ref funcName!, ref bp, result);
             nestLevel--;
 
           }
@@ -159,12 +161,9 @@ public class Compiler(string input)
     return null;
   }
 
-  private int ReturnFunc(ref string funcName, ref int bp)
+  private int ReturnFunc(ref string funcName, ref int bp, object? result)
   {
-    object? result = null;
     var func = parser.functions[funcName];
-
-    result = data.Pop();
 
     for (int i = 0; i < func.localCount; i++)
     {

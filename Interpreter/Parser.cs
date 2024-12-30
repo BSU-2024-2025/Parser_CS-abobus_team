@@ -69,9 +69,10 @@ public class Parser(string input)
     commandList.AddJump(currentIndex, out var command2);
     ParseBlock(parseVar: true);
     
-    commandList.AddConstant(currentIndex, 0);
-    commandList.AddEndExpression(currentIndex);
-    commandList.AddReturn(currentIndex);
+    //commandList.AddConstant(currentIndex, 0);
+    //commandList.AddEndExpression(currentIndex);
+    //commandList.AddReturn(currentIndex);
+    commandList.AddReturn0(currentIndex);
     command2.Value = commandList.GetCommandCount();
     func = null;
     funcName = null;
