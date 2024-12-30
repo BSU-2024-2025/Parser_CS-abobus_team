@@ -431,8 +431,9 @@ public class Parser(string input)
 
     while (IsNotEnd())
     {
-      if (ParseStringLiteral("\""))
+      if (GetCurrentChar() == '"')
       {
+        currentIndex++;
         break;
       }
 

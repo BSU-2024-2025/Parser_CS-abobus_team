@@ -740,6 +740,9 @@ public class Tests
             return x/y;
             """, ExpectedResult = 2.0)]
   [TestCase("""
+            return "a b";
+            """, ExpectedResult = "a b")]
+  [TestCase("""
             x = 7e10;
             y = 3.5e10;
             
