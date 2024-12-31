@@ -943,6 +943,15 @@ public class Tests
             fun f()
             {
               var a = [1,2,3];
+              return a[2];
+            }
+            x = [f(), 2*f(), 2*f()*f()];
+            return x[2] - x[1];
+            """, ExpectedResult = 12)]
+  [TestCase("""
+            fun f()
+            {
+              var a = [1,2,3];
               return a[0] - a[1];
             }
             return f();
@@ -969,6 +978,56 @@ public class Tests
             return x[2];
             """, ExpectedResult = 301)]
   public object? TestArray(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+
+  [TestCase("""
+            row0 = [1,2];
+            row1 = [11,22];
+            table = [row0, row1];
+            return table[1][0];
+            """, ExpectedResult = 11)]
+  [TestCase("""
+            table = [ 
+              [1,  2], 
+              [11, 22]
+              ];
+            return table[0][1];
+            """, ExpectedResult = 2)]
+  [TestCase("""
+            table = [ 
+              [1,  2,  3], 
+              [11, 22, 33]
+              ];
+            return table[0][1] + table[1][2];
+            """, ExpectedResult = 35)]
+  [TestCase("""
+            fun f()
+            {
+              var table = [ 
+                [1,  2], 
+                [11, 22]
+              ];
+              return table[1][0] - table[0][1];
+            }
+            return f();
+            """, ExpectedResult = 9)]
+  [TestCase("""
+            fun f(nrow)
+            {
+              var table = [ 
+                [1,  2], 
+                [11, 22]
+              ];
+              return table[nrow];
+            }
+            table = [f(0), f(1)];
+            return table[1][0] - table[0][1];
+            """, ExpectedResult = 9)]
+
+  public object? TestArray2dim(string input)
   {
     return new Compiler(input).Compile();
   }

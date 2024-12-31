@@ -593,43 +593,10 @@ public class Compiler(string input)
     else if (dim == 1)
       return (v as ArrayList)![index1];
     else if (dim == 2)
-      return ((v as ArrayList)![index1] as ArrayList)![index2];
+      return ((v as ArrayList)![index2] as ArrayList)![index1];
     else
       throw new ApplicationException($"Invalid Array dimension {dim}.");
   }
-
-  private object? GetGlobalVariable(string name, int dim = 0, int index1 = 0, int index2 = 0)
-  {
-    if (dim == 0)
-      return parser.variables[name];
-    else if (dim == 1)
-      return (parser.variables[name] as ArrayList)![index1];
-    else if (dim == 2)
-      return ((parser.variables[name] as ArrayList)![index1] as ArrayList)![index2];
-    else
-      throw new ApplicationException($"Invalid Array dimension {dim}.");
-  }
-
-
-  //private void AddGlobalVariable(string name)
-  //{
-  //    if (!HasVariable(name))
-  //    {
-  //        parser.variables.Add(name, null);
-  //    }
-  //}
-
-  //private void SetGlobalVariable(string name, object? value, int dim = 0, int index1 = 0, int index2 = 0)
-  //{
-  //  if (dim == 0)
-  //    parser.variables[name] = value;
-  //  else if (dim == 1)
-  //    (parser.variables[name] as ArrayList)![index1] = value;
-  //  else if (dim == 2)
-  //    ((parser.variables[name] as ArrayList)![index1] as ArrayList)![index2] = value;
-  //  else
-  //    throw new ApplicationException($"Invalid Array dimension {dim}.");
-  //}
 
   private void SetIndexedVariable(object o, object? value, int dim = 0, int index1 = 0, int index2 = 0)
   {
