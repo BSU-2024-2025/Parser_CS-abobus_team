@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Runtime.InteropServices;
 
 namespace Interpreter;
 
@@ -36,6 +38,22 @@ public class Compiler(string input)
     commands = parser.Parse();
     int bp = 0;
     string? funcName = null;
+    int dim = 0;
+    int index1 = 0;
+    int index2 = 0;
+
+    void GetIndexes()
+    {
+      if (dim > 0)
+      {
+        index1 = (int)PopData();
+      }
+      if (dim > 1)
+      {
+        index2 = (int)PopData();
+      }
+    }
+
     for (var i = 0; i < commands.Count; i++)
     {
       var command = commands[i];
@@ -46,11 +64,19 @@ public class Compiler(string input)
             PushData(command.Value!);
             break;
           }
+        case CommandType.GetGlobalIndexed:
         case CommandType.GetGlobal:
           {
+            dim = 0;
+            if (command.CommandType == CommandType.GetGlobalIndexed)
+            {
+              dim = (int)PopData();
+              GetIndexes();
+            }
+
             if (parser.HasGlobalVariable((string)command.Value!))
             {
-              var varValue = GetGlobalVariable((string)command.Value!);
+              var varValue = GetGlobalVariable((string)command.Value!, dim, index1, index2);
               if (varValue != null)
               {
                 PushData(varValue);
@@ -72,9 +98,25 @@ public class Compiler(string input)
             PushData(data.PeekByIndex(bp - (int)command.Value!)!);
             break;
           }
+        case CommandType.SetLocalIndexed:
         case CommandType.SetLocal:
           {
-            data.SetByIndex(bp - (int)command.Value!, PopData());
+            dim = 0;
+            if (command.CommandType == CommandType.SetGlobalIndexed)
+            {
+              dim = (int)PopData();
+            }
+            var v = PopData();
+            if (dim > 0)
+            {
+              GetIndexes();
+              var arr = data.PeekByIndex(bp - (int)command.Value!);
+              //data.SetByIndex(bp - (int)command.Value!, v, dim, index1, index2);
+            }
+            else
+            {
+              data.SetByIndex(bp - (int)command.Value!, v);
+            }
             break;
           }
         case CommandType.Operator:
@@ -98,34 +140,55 @@ public class Compiler(string input)
 
             break;
           }
-        //case CommandType.Variable:
-        //    AddGlobalVariable((string)command.Value!);
-        //    break;
 
-        //case CommandType.Assign:
-        //  SetGlobalVariable((string)command.Value!, PopData());
-        //  break;
+        case CommandType.SetGlobalIndexed:
         case CommandType.SetGlobal:
-          SetGlobalVariable((string)command.Value!, PopData());
-          break;
-        case CommandType.SetArrayGlobal:
-          var size = (int)PopData()!;
-          var a = new ArrayList();
-          for (var j = 0; j < size; j++)
           {
-            a.Add(PopData());
-          }
-          SetArrayGlobal((string)command.Value!, a);
-          bp = data.Count;
-          break;
-        case CommandType.GetArrayGlobal:
-          {
-            var index = (int)PopData()!;
-            var x = (string)command.Value!;
-            var d = (int)GetGlobalVariable(x)!;
-            PushData(data.PeekByIndex(bp - d + index)!);
+            dim = 0;
+            if (command.CommandType == CommandType.SetGlobalIndexed)
+            {
+              dim = (int)PopData();
+            }
+            var v = PopData();
+            if (dim > 0)
+            {
+              GetIndexes();
+            }
+            SetGlobalVariable((string)command.Value!, v, dim, index1, index2);
             break;
           }
+        case CommandType.NewArray:
+          {
+            var size = (int)command.Value!;
+            var a = new ArrayList(size);
+            for (var j = size - 1; j >= 0; j--)
+            {
+              a.Add(data.Peek(j));
+            }
+            PopData(size);
+            PushData(a);
+            break;
+          }
+        //case CommandType.SetArrayGlobal:
+        //  {
+        //    var size = (int)PopData();
+        //    var a = new ArrayList();
+        //    for (var j = 0; j < size; j++)
+        //    {
+        //      a.Add(PopData());
+        //    }
+        //    SetArrayGlobal((string)command.Value!, a);
+        //    bp = data.Count;
+        //    break;
+        //  }
+        //case CommandType.GetArrayGlobal:
+        //  {
+        //    var index = (int)PopData();
+        //    var x = (string)command.Value!;
+        //    var d = (int)GetGlobalVariable(x)!;
+        //    PushData(data.PeekByIndex(bp - d + index)!);
+        //    break;
+        //  }
         case CommandType.Return:
         case CommandType.Return0:
           if (nestLevel == 0 && GetOperatorsLength() != 0)
@@ -151,7 +214,7 @@ public class Compiler(string input)
           ExecuteOperators(Operator.End);
           break;
         case CommandType.If:
-          if (!(bool)PopData()!)
+          if (!(bool)PopData())
           {
             i = (int)command.Value! - 1; // increment in for
           }
@@ -173,6 +236,8 @@ public class Compiler(string input)
         case CommandType.PopStack:
           PopData();
           break;
+        default: 
+          throw new ApplicationException("Unknown command type");
       }
     }
 
@@ -194,19 +259,13 @@ public class Compiler(string input)
   {
     var func = parser.functions[funcName];
 
-    for (int i = 0; i < func.localCount; i++)
-    {
-      data.Pop();
-    }
+    PopData(func.localCount);
 
     bp = (int)data.Pop()!;
     funcName = (string)data.Pop()!;
     int curIndex = (int)data.Pop()!;
 
-    for (int i = 0; i < func.paramCount; i++)
-    {
-      data.Pop();
-    }
+    PopData(func.paramCount);
 
     data.Push(result);
     PopOperator();  // pop '('
@@ -235,8 +294,8 @@ public class Compiler(string input)
     {
       case Operator.Add:
         {
-          //var operand2 = PopData()!;
-          //var operand1 = PopData()!;
+          //var operand2 = PopData();
+          //var operand1 = PopData();
           //if (operand1 is int && operand2 is int)
           //{
           //  PushData((int?)operand1 + (int?)operand2);
@@ -259,33 +318,33 @@ public class Compiler(string input)
 
           //PushData((string?)operand1 + (string?)operand2);
 
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
           PushData(op1 + op2);
 
           break;
         }
       case Operator.Subtract:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
           PushData(op1 - op2);
           break;
         }
       case Operator.Multiply:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
           PushData(op1 * op2);
           break;
         }
       case Operator.Divide:
-        op2 = PopData()!;
-        op1 = PopData()!;
+        op2 = PopData();
+        op1 = PopData();
         PushData(op1 / op2);
         break;
       case Operator.UnaryMinus:
-        PushData(-(dynamic)PopData()!);
+        PushData(-(dynamic)PopData());
         break;
       case Operator.Not:
         {
@@ -301,8 +360,8 @@ public class Compiler(string input)
         }
       case Operator.MoreThan:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
 
           if (op2 is string && op1 is string)
           {
@@ -315,8 +374,8 @@ public class Compiler(string input)
         }
       case Operator.LessThan:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
 
           if (op2 is string && op1 is string)
           {
@@ -329,8 +388,8 @@ public class Compiler(string input)
         }
       case Operator.GreaterThanOrEqual:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
 
           if (op2 is string && op1 is string)
           {
@@ -343,8 +402,8 @@ public class Compiler(string input)
         }
       case Operator.LessThanOrEqual:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
 
           if (op2 is string && op1 is string)
           {
@@ -357,7 +416,7 @@ public class Compiler(string input)
         }
       case Operator.Equal:
         {
-          var operand1 = PopData()!;
+          var operand1 = PopData();
           var operand2 = PopData();
           var res = operand1.Equals(operand2);
           PushData(res);
@@ -365,8 +424,8 @@ public class Compiler(string input)
         }
       case Operator.And:
         {
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
           PushData(op1 && op2);
 
           //var operand1 = PopData();
@@ -380,7 +439,7 @@ public class Compiler(string input)
         }
       case Operator.NotEqual:
         {
-          var operand1 = PopData()!;
+          var operand1 = PopData();
           var operand2 = PopData();
           var res = !(operand1.Equals(operand2));
           PushData(res);
@@ -389,8 +448,8 @@ public class Compiler(string input)
       case Operator.Or:
         {
 
-          op2 = PopData()!;
-          op1 = PopData()!;
+          op2 = PopData();
+          op1 = PopData();
           PushData(op1 || op2);
 
           //var operand1 = PopData();
@@ -446,9 +505,17 @@ public class Compiler(string input)
     return data.Peek();
   }
 
-  private object? PopData()
+  private object PopData()
   {
-    return data.Pop();
+    return data.Pop()!;
+  }
+
+  private void PopData(int size)
+  {
+    for (var j = 0; j < size; j++)
+    {
+      PopData();
+    }
   }
 
   private void PushData(object data)
@@ -481,10 +548,30 @@ public class Compiler(string input)
     return operations.Peek();
   }
 
-  private object? GetGlobalVariable(string name)
+  private object? GetVariableIndexed(object v, int dim = 0, int index1 = 0, int index2 = 0)
   {
-    return parser.variables[name];
+    if (dim == 0)
+      return v;
+    else if (dim == 1)
+      return (v as ArrayList)![index1];
+    else if (dim == 2)
+      return ((v as ArrayList)![index1] as ArrayList)![index2];
+    else
+      throw new ApplicationException($"Invalid Array dimension {dim}.");
   }
+
+  private object? GetGlobalVariable(string name, int dim = 0, int index1 = 0, int index2 = 0)
+  {
+    if (dim == 0)
+      return parser.variables[name];
+    else if (dim == 1)
+      return (parser.variables[name] as ArrayList)![index1];
+    else if (dim == 2)
+      return ((parser.variables[name] as ArrayList)![index1] as ArrayList)![index2];
+    else
+      throw new ApplicationException($"Invalid Array dimension {dim}.");
+  }
+
 
   //private void AddGlobalVariable(string name)
   //{
@@ -494,8 +581,15 @@ public class Compiler(string input)
   //    }
   //}
 
-  private void SetGlobalVariable(string name, object? value)
+  private void SetGlobalVariable(string name, object? value, int dim = 0, int index1 = 0, int index2 = 0)
   {
-    parser.variables[name] = value;
+    if (dim == 0)
+      parser.variables[name] = value;
+    else if (dim == 1)
+      (parser.variables[name] as ArrayList)![index1] = value;
+    else if (dim == 2)
+      ((parser.variables[name] as ArrayList)![index1] as ArrayList)![index2] = value;
+    else
+      throw new ApplicationException($"Invalid Array dimension {dim}.");
   }
 }

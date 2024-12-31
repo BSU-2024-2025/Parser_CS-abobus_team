@@ -170,30 +170,36 @@ public class Parser(string input)
     }
   }
 
-  private bool ParseArrayIndex(string name)
+  private int ParseArrayIndex()
   {
-    commandList.AddOperator(currentIndex, "(");
-    if (!ParseExpression()) throw new Exception("Unexpected end of expression");
-    commandList.AddOperator(currentIndex, ")");
-    if (!ParseStringLiteral("]")) throw new Exception("Unexpected end of expression");
-    commandList.GetArrayGlobal(currentIndex, name);
-    return true;
+    int dim = 0;
+    while (ParseStringLiteral("["))
+    {
+      dim++;
+      commandList.AddOperator(currentIndex, "(");
+      if (!ParseExpression()) throw new Exception("Unexpected end of expression");
+      commandList.AddOperator(currentIndex, ")");
+      if (!ParseStringLiteral("]")) throw new Exception("Unexpected end of expression");
+      //commandList.GetArrayGlobal(currentIndex, name);
+    }
+    return dim;
   }
 
   private bool ParseAssign(string name, bool isInitLocal = false)
   {
+    int dim = ParseArrayIndex();
     if (!ParseStringLiteral("=")) return false;
-    var isArray = false;
-    if (ParseStringLiteral("["))
-    {
-      ParseArray(name);
-      isArray = true;
-    }
-    else
-    {
+    //var isArray = false;
+    //if (ParseStringLiteral("["))
+    //{
+    //  ParseArray(name);
+    //  isArray = true;
+    //}
+    //else
+    //{
       ParseExpression();
       commandList.AddEndExpression(currentIndex);
-    }
+    //}
     
     if (isInitLocal)
     {
@@ -206,14 +212,14 @@ public class Parser(string input)
 
     if (TryGetLocalVariableOffset(name, func, out var offset))
     {
-      if (isArray)
-      {
-        commandList.SetArrayLocal(currentIndex, offset);
-      }
-      else
-      {
-        commandList.SetLocalVariable(currentIndex, offset);
-      }
+      //if (isArray)
+      //{
+      //  commandList.SetArrayLocal(currentIndex, offset);
+      //}
+      //else
+      //{
+        commandList.SetLocalVariable(currentIndex, offset, dim);
+      //}
     }
     else 
     {
@@ -229,20 +235,21 @@ public class Parser(string input)
         }
       }
 
-      if (isArray)
-      {
-        commandList.SetArrayGlobal(currentIndex, name);
-      }
-      else
-      {
-        commandList.SetGlobalVariable(currentIndex, name);
-      }
+      //if (isArray)
+      //{
+      //  commandList.SetArrayGlobal(currentIndex, name);
+      //}
+      //else
+      //{
+        commandList.SetGlobalVariable(currentIndex, name, dim);
+      //}
     }
     return true;
   }
 
-  private bool ParseArray(string name)
+  private bool ParseArrayConstructor()
   {
+    if (!ParseStringLiteral("[")) return false;
     var n = 0;
     while (!ParseStringLiteral("]"))
     {
@@ -257,10 +264,11 @@ public class Parser(string input)
       }
       else
       {
-        throw new Exception("invalid array");
+        throw new ApplicationException("Invalid array constructor");
       }
     }
-    commandList.AddConstant(currentIndex, n);
+    //commandList.AddConstant(currentIndex, n);
+    commandList.AddNewArray(currentIndex, n);
     return true;
   }
 
@@ -392,6 +400,9 @@ public class Parser(string input)
     if (ParseVariableOrFunctionCall())
       return true;
 
+    if (ParseArrayConstructor())
+      return true;
+
     if (ParseStringLiteral(Operator.LeftParenthesis))
     {
       commandList.AddOperator(currentIndex, Operator.LeftParenthesis);
@@ -437,23 +448,29 @@ public class Parser(string input)
     if (ParseStringLiteral("("))
     {
       ParseFunctionCall(name);
-    }else if (ParseStringLiteral("["))
-    {
-      ParseArrayIndex(name);
     }
     else
     {
-      if (TryGetLocalVariableOffset(name, func, out var offset))
-      {
-        commandList.GetLocalVariable(currentIndex, offset);
-      }
-      else
-      {
-        commandList.GetGlobalVariable(currentIndex, name);
-      }
+      ParseVariable(name);
     }
     return true;
   }
+
+  private bool ParseVariable(string name)
+  {
+    int dim = ParseArrayIndex();
+
+    if (TryGetLocalVariableOffset(name, func, out var offset))
+    {
+      commandList.GetLocalVariable(currentIndex, offset, dim);
+    }
+    else
+    {
+      commandList.GetGlobalVariable(currentIndex, name, dim);
+    }
+    return true;
+  }
+
 
   private bool ParseBoolean(out object? o)
   {

@@ -894,6 +894,34 @@ public class Tests
                 //push(x,1);
             """, ExpectedResult = 1)]
   [TestCase("""
+                x = [1, 2, 3];
+                return x[0] / 1 + x[1] * 1 + x[2];
+            """, ExpectedResult = 6)]
+  [TestCase("""
+                x = [1, 2, 3];
+                return x[0*1 + 0*2] / 1 + x[(1 * 1)*1] * 1 + x[2/2 + 1/1];
+            """, ExpectedResult = 6)]
+  [TestCase("""
+                x = [1, 2, 3];
+                x[2] = 111;
+                return x[2];
+            """, ExpectedResult = 111)]
+  [TestCase("""
+                x = [1, 2, 3];
+                x[2] = x[1];
+                return x[2];
+            """, ExpectedResult = 2)]
+  [TestCase("""
+                x = [1, 2, 3];
+                x[2] = x[2]-x[0];
+                return x[2];
+            """, ExpectedResult = 2)]
+  [TestCase("""
+                x = [1, 2, 3];
+                x[1+1] = x[0*1 + 0*2] / 1 + x[(1 * 1)*1] * 1 + x[2/2 + 1/1];
+                return x[2];
+            """, ExpectedResult = 6)]
+  [TestCase("""
             x = 1;
             fun f()
             {

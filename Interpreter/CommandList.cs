@@ -1,6 +1,9 @@
 
+using System.Xml.Linq;
+
 namespace Interpreter;
 
+// public class IndexedValue
 public class CommandList
 {
   private readonly List<Command> commands = [];
@@ -17,13 +20,6 @@ public class CommandList
     Add(command);
   }
 
-  public void AddFunction(int index, object name)
-  {
-    var command = new Command(index, CommandType.Function, (name, GetCommandCount()));
-    // ToDo Add function to dictionary
-
-    Add(command);
-  }
   private void Add(Command command)
   {
     commands.Add(command);
@@ -40,11 +36,6 @@ public class CommandList
   {
     Add(index, CommandType.Return0);
   }
-  public void AddAssign(int index, object value)
-  {
-    Add(index, CommandType.Assign, value);
-  }
-
 
   public void AddPopStack(int index)
   {
@@ -58,19 +49,6 @@ public class CommandList
   {
     Add(index, CommandType.Constant, value);
   }
-  public void AddConstVariable(int index, string name)
-  {
-    Add(index, CommandType.ConstVariable, name);
-  }
-
-  //public void SetGlobalVariable(int index, string name)
-  //{
-  //  Add(index, CommandType.ConstVariable, name);
-  //}
-  //public void SetLocalVariable(int index, int offset)
-  //{
-  //  Add(index, CommandType.ConstVariable, offset);
-  //}
 
   public void AddJump(int index, out Command command)
   {
@@ -90,26 +68,48 @@ public class CommandList
     return commands;
   }
 
-  public void AddLocalVariable(int currentIndex, string s)
+  public void GetLocalVariable(int currentIndex, int offset, int dim = 0)
   {
-    commands.Add(new Command(currentIndex, CommandType.LocalVariable, s));
+    if (dim == 0)
+    {
+      commands.Add(new Command(currentIndex, CommandType.GetLocal, offset));
+    }
+    else
+    {
+      commands.Add(new Command(currentIndex, CommandType.Constant, dim));
+      commands.Add(new Command(currentIndex, CommandType.GetLocalIndexed, offset));
+    }
   }
-  public void GetLocalVariable(int currentIndex, int offset)
-  {
-    commands.Add(new Command(currentIndex, CommandType.GetLocal, offset));
-  }
-  public void SetLocalVariable(int currentIndex, int offset)
+
+  public void SetLocalVariable(int currentIndex, int offset, int dim = 0)
   {
     commands.Add(new Command(currentIndex, CommandType.SetLocal, offset));
   }
 
-  public void GetGlobalVariable(int currentIndex, string name)
+  public void GetGlobalVariable(int currentIndex, string name, int dim = 0)
   {
-    commands.Add(new Command(currentIndex, CommandType.GetGlobal, name));
+    if (dim == 0)
+    {
+      commands.Add(new Command(currentIndex, CommandType.GetGlobal, name));
+    }
+    else
+    {
+      commands.Add(new Command(currentIndex, CommandType.Constant, dim));
+      commands.Add(new Command(currentIndex, CommandType.GetGlobalIndexed, name));
+      //commands.Add(new Command(currentIndex, CommandType.GetGlobalIndexed, new GlobalIndexed(name, dim)); 
+    }
   }
-  public void SetGlobalVariable(int currentIndex, string name)
+  public void SetGlobalVariable(int currentIndex, string name, int dim = 0)
   {
-    commands.Add(new Command(currentIndex, CommandType.SetGlobal, name));
+    if (dim == 0)
+    {
+      commands.Add(new Command(currentIndex, CommandType.SetGlobal, name));
+    }
+    else
+    {
+      commands.Add(new Command(currentIndex, CommandType.Constant, dim));
+      commands.Add(new Command(currentIndex, CommandType.SetGlobalIndexed, name));
+    }
   }
 
   public void AddCallFunction(int currentIndex, string name)
@@ -117,18 +117,36 @@ public class CommandList
     commands.Add(new Command(currentIndex, CommandType.CallFunction, name));
   }
 
-  public void SetArrayLocal(int currentIndex, int name)
+  public void AddNewArray(int currentIndex, int size)
   {
-    commands.Add(new Command(currentIndex, CommandType.SetArrayLocal, name));
-  }
-  
-  public void SetArrayGlobal(int currentIndex, string name)
-  {
-    commands.Add(new Command(currentIndex, CommandType.SetArrayGlobal, name));
-  }
-
-  public void GetArrayGlobal(int currentIndex, string name)
-  {
-    commands.Add(new Command(currentIndex, CommandType.GetArrayGlobal, name));
+    commands.Add(new Command(currentIndex, CommandType.NewArray, size));
   }
 }
+
+//  public void SetArrayLocal(int currentIndex, int name)
+//  {
+//    commands.Add(new Command(currentIndex, CommandType.SetArrayLocal, name));
+//  }
+  
+//  public void SetArrayGlobal(int currentIndex, string name)
+//  {
+//    commands.Add(new Command(currentIndex, CommandType.SetArrayGlobal, name));
+//  }
+
+//  public void GetArrayGlobal(int currentIndex, string name)
+//  {
+//    commands.Add(new Command(currentIndex, CommandType.GetArrayGlobal, name));
+//  }
+//}
+
+//public class GlobalIndexed
+//{
+//  private string name;
+//  private int dim;
+
+//  public GlobalIndexed(string name, int dim)
+//  {
+//    this.name = name;
+//    this.dim = dim;
+//  }
+//}

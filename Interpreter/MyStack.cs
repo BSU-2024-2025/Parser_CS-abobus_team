@@ -34,7 +34,7 @@ public class MyStack<T>
       throw new InvalidOperationException("Invalid index");
     }
 
-    return items[^index];
+    return items[^(index+1)];
   }
 
   public T PeekByIndex(int index)
