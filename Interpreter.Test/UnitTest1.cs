@@ -928,9 +928,36 @@ public class Tests
               var x = 200, y =300;
               return x + y;
             }
-            x = [1, 2, f()];
+            x = [1, 2, f() + f() + f()];
             return x[2];
-            """, ExpectedResult = 500)]
+            """, ExpectedResult = 1500)]
+  [TestCase("""
+            fun f()
+            {
+              var a = [1,2,3];
+              return a[0];
+            }
+            return f();
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            fun f()
+            {
+              var a = [1,2,3];
+              return a[0] - a[1];
+            }
+            return f();
+            """, ExpectedResult = -1)]
+  [TestCase("""
+            x = 1;
+            fun f()
+            {
+              var x = 200, y =300;
+              var a = [1,2,3];
+              return x + y + a[0] + a[1]*2 + a[2]*3;
+            }
+            x = [1, 2, f() + f()];
+            return x[2];
+            """, ExpectedResult = 1028)]
   [TestCase("""
             x = 1;
             fun f()

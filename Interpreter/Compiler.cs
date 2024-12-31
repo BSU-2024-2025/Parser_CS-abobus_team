@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Interpreter;
 
@@ -76,10 +77,14 @@ public class Compiler(string input)
 
             if (parser.HasGlobalVariable((string)command.Value!))
             {
-              var varValue = GetGlobalVariable((string)command.Value!, dim, index1, index2);
+              var varValue = parser.variables[(string)command.Value!];
               if (varValue != null)
               {
-                PushData(varValue);
+                if (dim > 0)
+                {
+                  varValue = GetVariableIndexed(varValue, dim, index1, index2);
+                }
+                PushData(varValue!);
               }
               else
               {
@@ -93,9 +98,26 @@ public class Compiler(string input)
 
             break;
           }
+
+        case CommandType.GetLocalIndexed:
         case CommandType.GetLocal:
           {
-            PushData(data.PeekByIndex(bp - (int)command.Value!)!);
+            dim = 0;
+            if (command.CommandType == CommandType.GetLocalIndexed)
+            {
+              dim = (int)PopData();
+              GetIndexes();
+            }
+
+            var varValue = data.PeekByIndex(bp - (int)command.Value!)!;
+            if (varValue != null)
+            {
+              if (dim > 0)
+              {
+                varValue = GetVariableIndexed(varValue, dim, index1, index2);
+              }
+              PushData(varValue!);
+            }
             break;
           }
         case CommandType.SetLocalIndexed:
@@ -107,15 +129,20 @@ public class Compiler(string input)
               dim = (int)PopData();
             }
             var v = PopData();
+            var stackIndex = bp - (int)command.Value!;
             if (dim > 0)
             {
               GetIndexes();
-              var arr = data.PeekByIndex(bp - (int)command.Value!);
-              //data.SetByIndex(bp - (int)command.Value!, v, dim, index1, index2);
+              var arr = data.PeekByIndex(stackIndex);
+              if (arr != null)
+              {
+                SetIndexedVariable(arr, v, dim, index1, index2);
+              }
+              else throw new ApplicationException("Local array is not defined");
             }
             else
             {
-              data.SetByIndex(bp - (int)command.Value!, v);
+              data.SetByIndex(stackIndex, v);
             }
             break;
           }
@@ -150,11 +177,22 @@ public class Compiler(string input)
               dim = (int)PopData();
             }
             var v = PopData();
+            var name = (string)command.Value!;
             if (dim > 0)
             {
               GetIndexes();
+              var arr = parser.variables[name];
+              if (arr != null)
+              {
+                SetIndexedVariable(arr, v, dim, index1, index2);
+              }
+              else throw new ApplicationException($"Global array {name} is not defined");
+
             }
-            SetGlobalVariable((string)command.Value!, v, dim, index1, index2);
+            else 
+            {
+              parser.variables[name] = v;
+            }
             break;
           }
         case CommandType.NewArray:
@@ -581,14 +619,26 @@ public class Compiler(string input)
   //    }
   //}
 
-  private void SetGlobalVariable(string name, object? value, int dim = 0, int index1 = 0, int index2 = 0)
+  //private void SetGlobalVariable(string name, object? value, int dim = 0, int index1 = 0, int index2 = 0)
+  //{
+  //  if (dim == 0)
+  //    parser.variables[name] = value;
+  //  else if (dim == 1)
+  //    (parser.variables[name] as ArrayList)![index1] = value;
+  //  else if (dim == 2)
+  //    ((parser.variables[name] as ArrayList)![index1] as ArrayList)![index2] = value;
+  //  else
+  //    throw new ApplicationException($"Invalid Array dimension {dim}.");
+  //}
+
+  private void SetIndexedVariable(object o, object? value, int dim = 0, int index1 = 0, int index2 = 0)
   {
     if (dim == 0)
-      parser.variables[name] = value;
+      o = value!;
     else if (dim == 1)
-      (parser.variables[name] as ArrayList)![index1] = value;
+      (o as ArrayList)![index1] = value;
     else if (dim == 2)
-      ((parser.variables[name] as ArrayList)![index1] as ArrayList)![index2] = value;
+      ((o as ArrayList)![index1] as ArrayList)![index2] = value;
     else
       throw new ApplicationException($"Invalid Array dimension {dim}.");
   }
