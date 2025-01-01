@@ -278,7 +278,8 @@ public class Parser(string input)
   {
     if (func != null)
     {
-      func.Locals.TryGetValue(variable, out var local);
+      func.TryGetValue(variable, out var local);
+      //func.Locals.TryGetValue(variable, out var local);
       if (local != null)
       {
         offset = local.offset;
