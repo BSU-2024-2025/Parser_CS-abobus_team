@@ -226,7 +226,7 @@ public class Compiler(string input)
         case CommandType.Return0:
           if (nestLevel == 0 && GetOperatorsLength() != 0)
           {
-            throw new Exception($"Not empty operators stack.");
+            throw new ApplicationException($"Not empty operators stack.");
           }
 
           if (nestLevel == 0)
