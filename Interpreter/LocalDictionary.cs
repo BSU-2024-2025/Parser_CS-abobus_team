@@ -25,9 +25,9 @@ namespace Interpreter
       return (item == null);
     }
 
-    public void AddParam(string varName)
+    public void AddParam(string varName, object? defaultValue)
     {
-      Locals.Add(new LocalItem(isParam: true, paramCount++, varName));
+      Locals.Add(new LocalItem(isParam: true, paramCount++, varName, defaultValue));
       //Locals.Add(varName, new LocalItem(isParam: true, paramCount++, varName));
     }
     public void AddLocal(string varName)

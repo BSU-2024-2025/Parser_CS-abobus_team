@@ -54,7 +54,7 @@ public class Parser(string input)
     func = functions[funcName];
     while (!string.IsNullOrEmpty(param))
     {
-      func.AddParam(param);
+      func.AddParam(param, ParseDefaultValue());
       if (ParseStringLiteral(","))
       {
         param = ParseName();
@@ -74,6 +74,21 @@ public class Parser(string input)
     func = null;
     funcName = null;
     return true;
+  }
+
+  public object? ParseDefaultValue()
+  {
+    object? defaultValue = null;
+    if (ParseStringLiteral("="))
+    {
+      if (!ParseNum(out defaultValue))
+        if (!ParseString(out defaultValue))
+          if (!ParseBoolean(out defaultValue))
+          {
+            throw new ApplicationException("Default param value can be primitive constant type only");
+          }
+    }
+    return defaultValue;
   }
 
   private bool ParseOperators(bool parseFunction = false, bool parseVar = false)
@@ -369,7 +384,7 @@ public class Parser(string input)
     return false;
   }
 
-  private bool ParseOperand()
+  private bool ParseOperand(bool constOnly = false)
   {
     if (ParseNum(out var num))
     {
@@ -388,6 +403,9 @@ public class Parser(string input)
       if (boolean != null) commandList.AddConstant(currentIndex, boolean);
       return true;
     }
+
+    if (constOnly) // for default parameters 
+      return false;
 
     if (ParseVariableOrFunctionCall())
       return true;

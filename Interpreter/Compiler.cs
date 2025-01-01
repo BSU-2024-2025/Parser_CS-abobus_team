@@ -266,13 +266,15 @@ public class Compiler(string input)
           break;
         case CommandType.CallFunction:
           PushOperator("(");
+          //int argc = (int)PeekData()!;
+          PushDefaultParams((string)command.Value!);
           data.Push(i);
           data.Push(funcName);
           data.Push(bp);
           bp = data.Count;
           nestLevel++;
           funcName = (string)command.Value!;
-          i = CallFunc((string)command.Value!) - 1; // increment in for
+          i = CallFunc(funcName) - 1; // increment in for
           break;
         case CommandType.PopStack:
           PopData();
@@ -284,16 +286,6 @@ public class Compiler(string input)
 
 
     return null;
-  }
-
-
-  private void SetArrayGlobal(string name, ArrayList a)
-  {
-    parser.variables[name] = a.Count;
-    for (var i = a.Count - 1; i >= 0; i--)
-    {
-      data.Push(a[i]);
-    }
   }
 
   private int ReturnFunc(ref string funcName, ref int bp, object? result)
@@ -317,6 +309,30 @@ public class Compiler(string input)
     PopOperator();  // pop '('
     return curIndex;
   }
+
+  private void PushDefaultParams(string funcName)
+  {
+    if (parser.functions.TryGetValue(funcName, out LocalDictionary? func))
+    {
+      int argc = (int)data.Peek()!; 
+      if (argc < func.paramCount)
+      {
+        int added = 0;
+        for (int i = argc; i < func.paramCount; i++)
+        {
+          if (func.Locals[i].defaultValue == null)
+            throw new ApplicationException($"Missing argument(s) for function: {funcName}.");
+          else
+          {
+            if (added == 0) PopData();
+            data.Push(func.Locals[i].defaultValue);
+            added++;
+          }
+        }
+        PushData(argc + added);
+      }
+    }
+   }
 
   private int CallFunc(string funcName)
   {

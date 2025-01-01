@@ -1147,7 +1147,40 @@ public class CompilationException : Exception
             }
             return 1 + f(1,2,3,4,5) + 100; // extra arguments
             """, ExpectedResult = 106)]
-    public object? TestArgc(string input)
+  public object? TestArgc(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
+            fun f(b = 22)
+            {
+              return b;
+            }
+            return f(1); 
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            fun f(a, b = 22)
+            {
+              return b;
+            }
+            return f(1); 
+            """, ExpectedResult = 22)]
+  [TestCase("""
+            fun f(a, b = 22, c = true, d = "qwe")
+            {
+              return c;
+            }
+            return f(1); 
+            """, ExpectedResult = true)]
+  [TestCase("""
+            fun f(a, b = 22, c = true, d = "qwe")
+            {
+              return d;
+            }
+            return f(1); 
+            """, ExpectedResult = "qwe")]
+  public object? TestDefaultParam(string input)
   {
     return new Compiler(input).Compile();
   }
