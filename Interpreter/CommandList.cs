@@ -56,7 +56,7 @@ public class CommandList
   {
     commands.Add(new Command(index, type, value));
   }
-  private void Add(int index, CommandType type)
+  public void Add(int index, CommandType type)
   {
     commands.Add(new Command(index, type));
   }

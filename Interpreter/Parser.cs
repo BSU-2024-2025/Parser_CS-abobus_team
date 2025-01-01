@@ -1,3 +1,5 @@
+using System.Data;
+
 namespace Interpreter;
 
 public class Parser(string input)
@@ -6,8 +8,8 @@ public class Parser(string input)
   private readonly CommandList commandList = new();
   public readonly Dictionary<string, object?> variables = new();
   public readonly Dictionary<string, LocalDictionary> functions = new();
-  private string funcName = null;
-  private LocalDictionary func = null;
+  private string? funcName = null;
+  private LocalDictionary? func = null;
 
 
   public void AddFunction(string name)
@@ -74,19 +76,6 @@ public class Parser(string input)
     return true;
   }
 
-  private bool ParseProcedureCall()
-  {
-    var name = ParseName();
-    if (name == "") return false;
-    if (ParseStringLiteral("("))
-    {
-      ParseFunctionCall(name);
-      commandList.AddCallFunction(currentIndex, name!);
-      return true;
-    }
-    return false;
-  }
-
   private bool ParseOperators(bool parseFunction = false, bool parseVar = false)
   {
     while (IsNotEnd())
@@ -133,7 +122,7 @@ public class Parser(string input)
     if (!ParseStringLiteral("var")) return false;
     var name = ParseName();
 
-    func = functions[funcName];
+    func = functions[funcName!];
     while (!string.IsNullOrEmpty(name))
     {
       if (!ParseAssign(name, isInitLocal: true))
@@ -156,15 +145,20 @@ public class Parser(string input)
     if (name == "") return false;
     if (ParseStringLiteral("("))
     {
-      ParseFunctionCall(name);
-      if (!ParseStringLiteral(";")) throw new ApplicationException("Unexpected end of expression");
-      commandList.AddPopStack(currentIndex); // pop returned value
-      return true;
+      return ParseProcedureCall(name);
     }
     else
     {
       return ParseAssign(name);
     }
+  }
+
+  private bool ParseProcedureCall(string name)
+  {
+    ParseFunctionCall(name);
+    if (!ParseStringLiteral(";")) throw new ApplicationException("Unexpected end of procedure call");
+    commandList.AddPopStack(currentIndex); // pop returned value
+    return true;
   }
 
   private int ParseArrayIndex()
@@ -414,14 +408,31 @@ public class Parser(string input)
       return false;
     }
 
+    if (ParseSysVar())
+      return true;
+
     return false;
+  }
+
+  private bool ParseSysVar()
+  {
+    if (!ParseStringLiteral("@@"))
+      return false;
+    if (ParseStringLiteral("argc"))
+    {
+      commandList.Add(currentIndex, CommandType.GetArgc);
+      return true;
+    }
+    throw new ApplicationException("Unknown system variable");
   }
 
   private bool ParseFunctionCall(string name)
   {
+    int argc = 0;
     while (!ParseStringLiteral(")"))
     {
       commandList.AddOperator(currentIndex, "(");
+      argc++;
       ParseExpression();
       commandList.AddOperator(currentIndex, ")");
       if (ParseStringLiteral(")")) break;
@@ -434,6 +445,7 @@ public class Parser(string input)
         throw new ApplicationException("invalid function call");
       }
     }
+    commandList.AddConstant(currentIndex, argc);
     commandList.AddCallFunction(currentIndex, name!);
 
     return true;

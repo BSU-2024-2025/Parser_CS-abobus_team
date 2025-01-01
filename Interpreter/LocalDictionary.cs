@@ -44,7 +44,7 @@ namespace Interpreter
       {
         if (param.isParam)
         {
-          param.offset = paramCount - param.offset + 3; // 3 => address to return, funcName, bp
+          param.offset = paramCount - param.offset + 4; // 4 => argc, address to return, funcName, bp
         }
       }
         //foreach (var (param as LocalItem) in Locals)

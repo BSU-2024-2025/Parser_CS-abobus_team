@@ -243,6 +243,14 @@ public class Compiler(string input)
           }
 
           break;
+
+        case CommandType.GetArgc:
+          if (funcName != null)
+            PushData(data.PeekByIndex(bp - 4)!);
+          else
+            PushData(0);
+          break;
+
         case CommandType.EndExpression:
           ExecuteOperators(Operator.End);
           break;
@@ -294,11 +302,16 @@ public class Compiler(string input)
 
     PopData(func.localCount);
 
-    bp = (int)data.Pop()!;
-    funcName = (string)data.Pop()!;
-    int curIndex = (int)data.Pop()!;
+    bp = (int)PopData();
+    funcName = (string)PopData();
+    int curIndex = (int)PopData();
 
-    PopData(func.paramCount);
+    int argc = (int)PopData();
+
+    if (argc >= func.paramCount) 
+      PopData(argc);
+    else
+      PopData(func.paramCount); // if default params are used
 
     data.Push(result);
     PopOperator();  // pop '('

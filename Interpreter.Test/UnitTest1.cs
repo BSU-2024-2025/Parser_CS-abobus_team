@@ -1098,6 +1098,61 @@ public class CompilationException : Exception
   }
 
   [TestCase("""
+            return @@argc;
+            """, ExpectedResult = 0)]
+  [TestCase("""
+            return 1 + @@argc + 3;
+            """, ExpectedResult = 4)]
+  [TestCase("""
+            fun f(a, b)
+            {
+              return @@argc;
+            }
+            return f(1,2);
+            """, ExpectedResult = 2)]
+  [TestCase("""
+            fun f()
+            {
+              return @@argc;
+            }
+            return f();
+            """, ExpectedResult = 0)]
+  [TestCase("""
+            x = @@argc;
+
+            fun f3(a, b, c)
+            {
+              return @@argc * 10;
+            }
+            
+            fun f(a, b)
+            {
+              return @@argc + f3(1,2,3);
+            }
+            
+            x = x + f(1,2) + @@argc;
+            return x;
+            """, ExpectedResult = 32)]
+  //[TestCase("""
+  //          fun f(a, b)
+  //          {
+  //            return @@argc;
+  //          }
+  //          return f(); // no arguments
+  //          """, ExpectedResult = 2)]
+  [TestCase("""
+            fun f(a, b)
+            {
+              return @@argc;
+            }
+            return 1 + f(1,2,3,4,5) + 100; // extra arguments
+            """, ExpectedResult = 106)]
+    public object? TestArgc(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
             t1 = getDate();
             t2 = getDate();
             return t2 >= t1;
