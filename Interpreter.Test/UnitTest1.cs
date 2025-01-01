@@ -1210,7 +1210,7 @@ public class CompilationException : Exception
             x = [1,2,3];
             f(x);
             return x[2]; 
-            """, ExpectedResult = 200)]
+            """, ExpectedResult = 300)]
   public object? TestSideEffect(string input)
   {
     return new Compiler(input).Compile();

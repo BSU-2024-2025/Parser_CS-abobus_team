@@ -119,7 +119,7 @@ public class Compiler(string input)
         case CommandType.SetLocal:
           {
             dim = 0;
-            if (command.CommandType == CommandType.SetGlobalIndexed)
+            if (command.CommandType == CommandType.SetLocalIndexed)
             {
               dim = (int)PopData();
             }
