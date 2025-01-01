@@ -183,9 +183,9 @@ public class Parser(string input)
     {
       dim++;
       commandList.AddOperator(currentIndex, "(");
-      if (!ParseExpression()) throw new ApplicationException("Unexpected end of expression");
+      if (!ParseExpression()) throw new ApplicationException("Unexpected end of index expression");
       commandList.AddOperator(currentIndex, ")");
-      if (!ParseStringLiteral("]")) throw new ApplicationException("Unexpected end of expression");
+      if (!ParseStringLiteral("]")) throw new ApplicationException("Unexpected end of index expression");
       //commandList.GetArrayGlobal(currentIndex, name);
     }
     return dim;
@@ -384,7 +384,7 @@ public class Parser(string input)
     return false;
   }
 
-  private bool ParseOperand(bool constOnly = false)
+  private bool ParseOperand()
   {
     if (ParseNum(out var num))
     {
@@ -403,9 +403,6 @@ public class Parser(string input)
       if (boolean != null) commandList.AddConstant(currentIndex, boolean);
       return true;
     }
-
-    if (constOnly) // for default parameters 
-      return false;
 
     if (ParseVariableOrFunctionCall())
       return true;

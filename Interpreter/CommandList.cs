@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 namespace Interpreter;
 
 // public class IndexedValue
@@ -80,7 +82,16 @@ public class CommandList
 
   public void SetLocalVariable(int currentIndex, int offset, int dim = 0)
   {
-    commands.Add(new Command(currentIndex, CommandType.SetLocal, offset));
+    if (dim == 0)
+    {
+      commands.Add(new Command(currentIndex, CommandType.SetLocal, offset));
+    }
+    else
+    {
+      commands.Add(new Command(currentIndex, CommandType.Constant, dim));
+      commands.Add(new Command(currentIndex, CommandType.SetLocalIndexed, offset));
+    }
+
   }
 
   public void GetGlobalVariable(int currentIndex, string name, int dim = 0)

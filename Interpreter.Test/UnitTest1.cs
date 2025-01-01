@@ -1180,7 +1180,38 @@ public class CompilationException : Exception
             }
             return f(1); 
             """, ExpectedResult = "qwe")]
+  [TestCase("""
+            fun f(a, b = 22, c = true, d = "qwe")
+            {
+              if (a + b == 3) { return d; }
+              else { return -1; }
+            }
+            return f(1, 2); 
+            """, ExpectedResult = "qwe")]
   public object? TestDefaultParam(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
+            fun f(a)
+            {
+              a = a + 1;
+            }
+            x = 0;
+            f(x);
+            return x; 
+            """, ExpectedResult = 0)]
+  [TestCase("""
+            fun f(a)
+            {
+              a[2] = a[2]*100;
+            }
+            x = [1,2,3];
+            f(x);
+            return x[2]; 
+            """, ExpectedResult = 200)]
+  public object? TestSideEffect(string input)
   {
     return new Compiler(input).Compile();
   }
