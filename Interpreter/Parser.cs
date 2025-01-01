@@ -1,6 +1,3 @@
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 namespace Interpreter;
 
 public class Parser(string input)
@@ -46,7 +43,7 @@ public class Parser(string input)
     if (!ParseStringLiteral("fun")) return false;
     var name = ParseName();
     if (name == "") throw new ApplicationException("Missing function name");
-    
+
     AddFunction(name);
     funcName = name;
     if (!ParseStringLiteral("(")) throw new ApplicationException("Expected '('");
@@ -69,7 +66,7 @@ public class Parser(string input)
 
     commandList.AddJump(currentIndex, out var command2);
     ParseBlock(parseVar: true);
-    
+
     commandList.AddReturn0(currentIndex);
     command2.Value = commandList.GetCommandCount();
     func = null;
@@ -139,8 +136,8 @@ public class Parser(string input)
     func = functions[funcName];
     while (!string.IsNullOrEmpty(name))
     {
-      if (!ParseAssign(name, isInitLocal:true))
-        func.AddLocal(name); 
+      if (!ParseAssign(name, isInitLocal: true))
+        func.AddLocal(name);
       if (ParseStringLiteral(","))
       {
         name = ParseName();
@@ -197,10 +194,10 @@ public class Parser(string input)
     //}
     //else
     //{
-      ParseExpression();
-      commandList.AddEndExpression(currentIndex);
+    ParseExpression();
+    commandList.AddEndExpression(currentIndex);
     //}
-    
+
     if (isInitLocal)
     {
       func.AddLocal(name);
@@ -218,10 +215,10 @@ public class Parser(string input)
       //}
       //else
       //{
-        commandList.SetLocalVariable(currentIndex, offset, dim);
+      commandList.SetLocalVariable(currentIndex, offset, dim);
       //}
     }
-    else 
+    else
     {
       if (!HasGlobalVariable(name))
       {
@@ -241,7 +238,7 @@ public class Parser(string input)
       //}
       //else
       //{
-        commandList.SetGlobalVariable(currentIndex, name, dim);
+      commandList.SetGlobalVariable(currentIndex, name, dim);
       //}
     }
     return true;
@@ -276,7 +273,7 @@ public class Parser(string input)
   {
     return variables.ContainsKey(variable);
   }
-  
+
   public bool TryGetLocalVariableOffset(string variable, LocalDictionary func, out int offset)
   {
     if (func != null)
@@ -525,9 +522,9 @@ public class Parser(string input)
     Skip();
     var prevIndex = currentIndex;
     num = null;
-    while (IsNotEnd() && char.IsDigit(GetCurrentChar())) 
+    while (IsNotEnd() && char.IsDigit(GetCurrentChar()))
       currentIndex++;
-    if (currentIndex > prevIndex) 
+    if (currentIndex > prevIndex)
     {
       bool hasFract = false;
       bool hasExp = false;

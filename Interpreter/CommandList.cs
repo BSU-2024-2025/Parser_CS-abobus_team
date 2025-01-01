@@ -1,6 +1,3 @@
-
-using System.Xml.Linq;
-
 namespace Interpreter;
 
 // public class IndexedValue
@@ -127,7 +124,7 @@ public class CommandList
 //  {
 //    commands.Add(new Command(currentIndex, CommandType.SetArrayLocal, name));
 //  }
-  
+
 //  public void SetArrayGlobal(int currentIndex, string name)
 //  {
 //    commands.Add(new Command(currentIndex, CommandType.SetArrayGlobal, name));

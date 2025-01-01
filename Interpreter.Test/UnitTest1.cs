@@ -4,153 +4,153 @@ namespace Interpreter.Test;
 
 public class Tests
 {
-    [SetUp]
-    public void Setup()
-    {
-    }
+  [SetUp]
+  public void Setup()
+  {
+  }
 
 
-    [TestCase("""
+  [TestCase("""
                     x = 1+2;
                     return x;
               """, ExpectedResult = 3)]
-    [TestCase("""
+  [TestCase("""
               return 3;
               """, ExpectedResult = 3)]
-    [TestCase("""
+  [TestCase("""
               return 3 + 1;
               """, ExpectedResult = 4)]
-    [TestCase("""
+  [TestCase("""
               x = 1+2;
               return x * 3;
               """, ExpectedResult = 9)]
-    [TestCase("""
+  [TestCase("""
               x = 1+2;
               y = x * 3;
               return y + x;
               """, ExpectedResult = 12)]
-    [TestCase("""
+  [TestCase("""
               x = 1+2;
               y = x * 3;
               return y + x;
               return x;
               """, ExpectedResult = 12)]
-    [TestCase("""
+  [TestCase("""
               return;
               """, ExpectedResult = 0)]
-    [TestCase("""
+  [TestCase("""
               return "str";
               """, ExpectedResult = "str")]
-    [TestCase("""
+  [TestCase("""
               x = "str";
               return x;
               """, ExpectedResult = "str")]
-    [TestCase("""
+  [TestCase("""
               x = "str1";
               y = "str2";
               return x + y;
               """, ExpectedResult = "str1str2")]
-    [TestCase("""
+  [TestCase("""
               x = "str1";
               y = "str2";
               return y + x;
               """, ExpectedResult = "str2str1")]
-    [TestCase("""
+  [TestCase("""
               x = "str1";
               y = "str2";
               z = x + y;
               return y + x + z;
               """, ExpectedResult = "str2str1str1str2")]
-    [TestCase("""
+  [TestCase("""
               x = true;
               return x;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               x = true;
               return !x;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               x = false;
               return !x;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               x = -(-(-1));
               return x;
               """, ExpectedResult = -1)]
-    [TestCase("""
+  [TestCase("""
               x = true;
               """, ExpectedResult = 0)]
-    [TestCase("""
+  [TestCase("""
               x = false;
               return x;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               x = false;
               y = x;
               return y;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               x = 3;
               y = 2;
               return x > y;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               x = 3;
               y = 2;
               return x < y;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               x = 3;
               y = 2;
               return x >= y;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               x = 2;
               y = 2;
               return x >= y;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               x = 2;
               y = 2;
               return x <= y;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return 3 >= 3;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return 4 >= 3;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return 4 <= 3;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               return 4 <= 3 && 9 > 1;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               return 4 >= 3 && 9 > 1;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return (4 >= 3) && (9 > 1);
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return 10 > 3 || 9 < 1;
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return (10 > 3) || (9 < 1);
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return 1 > 2 || 4 < 3;
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               return (1 > 2) || (4 < 3);
               """, ExpectedResult = false)]
-    [TestCase("""
+  [TestCase("""
               return (!(1 > 2)) || (!(4 < 3));
               """, ExpectedResult = true)]
-    [TestCase("""
+  [TestCase("""
               return (1+2);
               """, ExpectedResult = 3)]
-    [TestCase("""
+  [TestCase("""
               x = 1;
               if (1 > 2)
               {
@@ -158,7 +158,7 @@ public class Tests
               }
               return x;
               """, ExpectedResult = 1)]
-    [TestCase("""
+  [TestCase("""
               y = 1;
               x = 0;
               if (y == 2){
@@ -169,14 +169,14 @@ public class Tests
               }
               return x;
               """, ExpectedResult = 5)]
-    [TestCase("""
+  [TestCase("""
               y = 0;
               while (y <= 5) {
                 y = y + 1;
               }
               return y;
               """, ExpectedResult = 6)]
-    [TestCase("""
+  [TestCase("""
               if (2 == 2){
                return 3;
               }else if (4 == 4){
@@ -186,7 +186,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 3)]
-    [TestCase("""
+  [TestCase("""
               if (2 != 2){
                return 3;
               }else if (4 == 4){
@@ -196,7 +196,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 6)]
-    [TestCase("""
+  [TestCase("""
               if (2 != 2){
                return 3;
               }else if (4 < 4){
@@ -206,7 +206,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 7)]
-    [TestCase("""
+  [TestCase("""
               if (2 != 2){
                return 3;
               }else if (4 < 4){
@@ -215,7 +215,7 @@ public class Tests
 
               return 8;
               """, ExpectedResult = 8)]
-    [TestCase("""
+  [TestCase("""
               if (1 >= 2){
                return 3;
               }else if (3 <= 4){
@@ -227,7 +227,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 5)]
-    [TestCase("""
+  [TestCase("""
               if (1 >= 2){
                return 3;
               }else if (3 <= 4){
@@ -239,7 +239,7 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 6)]
-    [TestCase("""
+  [TestCase("""
               if (1 <= 2){
                return 3;
               }else if (3 <= 4){
@@ -251,27 +251,27 @@ public class Tests
               }
               return 8;
               """, ExpectedResult = 3)]
-    [TestCase("""
+  [TestCase("""
               if 3 == 3 {
                return 1;
               }
               return 6;
               """, ExpectedResult = 1)]
-    [TestCase("""
+  [TestCase("""
               if 3 != 3 {
                return 1;
               }
               return 6;
               """, ExpectedResult = 6)]
-    public object? TestCompiler(string input)
-    {
-        //var p = new Parser(input);
-        //var c = new Compiler(p.Parse());
-        var c = new Compiler(input);
-        return c.Compile();
-    }
+  public object? TestCompiler(string input)
+  {
+    //var p = new Parser(input);
+    //var c = new Compiler(p.Parse());
+    var c = new Compiler(input);
+    return c.Compile();
+  }
 
-    [TestCase("""
+  [TestCase("""
               y = 1;
               x = 0;
               if (y == 2){
@@ -282,21 +282,21 @@ public class Tests
               }
               return x;
               """)]
-    public void BadTestCompiler(string input)
+  public void BadTestCompiler(string input)
+  {
+    try
     {
-        try
-        {
-             //var p = new Parser(input);
+      //var p = new Parser(input);
       //var c = new Compiler(p.Parse());
-            var c = new Compiler(input);
-            c.Compile();
-            Assert.IsFalse(true);
-        }
-        catch (Exception e)
-        {
-            Assert.IsTrue(true);
-        }
+      var c = new Compiler(input);
+      c.Compile();
+      Assert.IsFalse(true);
     }
+    catch (Exception e)
+    {
+      Assert.IsTrue(true);
+    }
+  }
 
   [TestCase("""
                fun foo()
@@ -613,11 +613,11 @@ public class Tests
             """, ExpectedResult = 74)]
   // sub(     10     +     68,     div( 4     + 16,      5) ) = 78 - 20/5 = 74
   public object? TestFunctions(string input)
-    {
-      return new Compiler(input).Compile();
-    }
+  {
+    return new Compiler(input).Compile();
+  }
 
-    [TestCase("""
+  [TestCase("""
 
             fun foo()
             {
@@ -867,7 +867,8 @@ public class Tests
             """)]
   public void TestCreateGlobalVarInFuncException(string input)
   {
-    Assert.That(() => new Compiler(input).Compile(), Throws.Exception);
+    Assert.That(() => new Compiler(input).Compile(), 
+                Throws.TypeOf<ApplicationException>().With.Message.Contains("Cannot create global variable in the function"));
   }
 
   [TestCase("""
@@ -882,10 +883,75 @@ public class Tests
               return "qwe" - 5;
             """)]
   [DefaultFloatingPointTolerance(1e-12)]
-  public void TestRuntimeBinderException(string input) 
+  public void TestRuntimeBinderException(string input)
   {
-    Assert.That(() => new Compiler(input).Compile(), Throws.Exception); 
+    // Assert.That(() => new Compiler(input).Compile(),
+    //        Throws.Exception); // too broad
+
+    //Assert.That(() => new Compiler(input).Compile(), 
+    //        Throws.TypeOf<Microsoft.CSharp.RuntimeBinder.RuntimeBinderException>().With.Message.Contains("Cannot implicitly convert type"));
+
+    var ex = Assert.Throws<Microsoft.CSharp.RuntimeBinder.RuntimeBinderException>(() => new Compiler(input).Compile()); // Catch our exception type
+
+    Assert.That( ex.Message.Contains("cannot be applied to operand")
+              || ex.Message.Contains("Cannot implicitly convert type"));
   }
+
+  [TestCase("""
+            return f();
+            """)]
+  public void TestUnknownFunctionException(string input)
+  {
+    Assert.That(() => new Compiler(input).Compile(), //Throws.Exception);
+                Throws.TypeOf<ApplicationException>().With.Message.Contains("Unknown function name: f"));
+  }
+
+/*****
+public class Compiler
+{
+  public void Compile()
+  {
+    // Simulate a compilation error
+    throw new CompilationException("Invalid input format.", 10, 5);
+    //throw new ArgumentNullException("input"); // This would make the broad test pass but the specific one fail
+  }
+}
+
+public class CompilationException : Exception
+{
+  public int LineNumber { get; set; }
+  public int ColumnNumber { get; set; }
+  public CompilationException(string message, int lineNumber, int columnNumber) : base(message)
+  {
+    LineNumber = lineNumber;
+    ColumnNumber = columnNumber;
+  }
+}
+
+  public void Compile_ThrowsException_TooBroad()
+  {
+    Assert.That(() => new Compiler().Compile(), Throws.Exception); // This is NOT recommended
+  }
+
+  public void Compile_ThrowsCompilationException()
+  {
+    Assert.Throws<CompilationException>(() => new Compiler().Compile()); // Much better
+  }
+
+  public void Compile_ThrowsCompilationExceptionWithMessage()
+  {
+    Assert.That(() => new Compiler().Compile(), Throws.TypeOf<CompilationException>().With.Message.EqualTo("Invalid input format."));
+  }
+
+  public void Compile_ThrowsCompilationExceptionWithLineAndColumn()
+  {
+    var ex = Assert.Throws<CompilationException>(() => new Compiler().Compile());
+    Assert.That(ex.LineNumber, Is.EqualTo(10));
+    Assert.That(ex.ColumnNumber, Is.EqualTo(5));
+  }
+}
+*******************/
+
 
   [TestCase("""
                 x = [1, 2, 3];
@@ -1026,9 +1092,19 @@ public class Tests
             table = [f(0), f(1)];
             return table[1][0] - table[0][1];
             """, ExpectedResult = 9)]
-
   public object? TestArray2dim(string input)
   {
     return new Compiler(input).Compile();
   }
+
+  [TestCase("""
+            t1 = getDate();
+            t2 = getDate();
+            return t2 >= t1;
+            """, ExpectedResult = true)]
+  public object? TestBuiltinFunctions(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
 }

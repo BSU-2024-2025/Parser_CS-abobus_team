@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Interpreter
+﻿namespace Interpreter
 {
   public class LocalDictionary
   {
@@ -14,7 +8,7 @@ namespace Interpreter
 
     internal Dictionary<string, LocalItem> Locals { get; set; } = [];
 
-    public LocalDictionary(int codeIndex) 
+    public LocalDictionary(int codeIndex)
     {
       this.codeIndex = codeIndex;
       this.paramCount = 0;

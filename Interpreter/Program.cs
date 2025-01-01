@@ -2,8 +2,8 @@ namespace Interpreter;
 
 public class Program
 {
-    public static void Main(string[] args)
-    {
+  public static void Main(string[] args)
+  {
     // var a = InitParser("""
     //                    return (10 > 3) || (9 < 1);
     //                 """);
@@ -116,21 +116,21 @@ public class Program
     //                         return x;
     //                    """);
     var command = a.Parse();
-        for (var i = 0; i < command.Count; i++)
-        {
-            var c = command[i];
-            Console.WriteLine(i + ":");
-            Console.WriteLine("type: " + c.CommandType);
-            Console.WriteLine("value: " + c.Value);
-            Console.WriteLine("------------------");
-        }
-
-        //var b = new Compiler(command);
-        //Console.WriteLine("result: " + b.Compile());
-    }
-
-    public static Parser InitParser(string input)
+    for (var i = 0; i < command.Count; i++)
     {
-        return new Parser(input);
+      var c = command[i];
+      Console.WriteLine(i + ":");
+      Console.WriteLine("type: " + c.CommandType);
+      Console.WriteLine("value: " + c.Value);
+      Console.WriteLine("------------------");
     }
+
+    //var b = new Compiler(command);
+    //Console.WriteLine("result: " + b.Compile());
+  }
+
+  public static Parser InitParser(string input)
+  {
+    return new Parser(input);
+  }
 }

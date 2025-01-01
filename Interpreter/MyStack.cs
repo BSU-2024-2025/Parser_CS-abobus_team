@@ -34,7 +34,7 @@ public class MyStack<T>
       throw new InvalidOperationException("Invalid index");
     }
 
-    return items[^(index+1)];
+    return items[^(index + 1)];
   }
 
   public T PeekByIndex(int index)
@@ -47,7 +47,7 @@ public class MyStack<T>
     return items[index];
   }
 
-  public void SetByIndex(int index, T value) 
+  public void SetByIndex(int index, T value)
   {
     if (IsEmpty || index >= items.Count || index < 0)
     {

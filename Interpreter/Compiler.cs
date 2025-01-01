@@ -1,8 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Specialized;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
 
 namespace Interpreter;
 
@@ -17,7 +13,6 @@ public class Compiler(string input)
   //private readonly Dictionary<string, object?> variables = new();
   //private readonly Dictionary<string, LocalDictionary> functions = new();
   private int nestLevel = 0;
-  private LocalDictionary? context = null;
   private Parser parser = null;
 
 
@@ -189,7 +184,7 @@ public class Compiler(string input)
               else throw new ApplicationException($"Global array {name} is not defined");
 
             }
-            else 
+            else
             {
               parser.variables[name] = v;
             }
@@ -274,7 +269,7 @@ public class Compiler(string input)
         case CommandType.PopStack:
           PopData();
           break;
-        default: 
+        default:
           throw new ApplicationException("Unknown command type");
       }
     }
@@ -282,7 +277,7 @@ public class Compiler(string input)
 
     return null;
   }
-  
+
 
   private void SetArrayGlobal(string name, ArrayList a)
   {
@@ -312,14 +307,20 @@ public class Compiler(string input)
 
   private int CallFunc(string funcName)
   {
-    var func = parser.functions[funcName];
-
-    for (int i = 0; i < func.localCount; i++)
+    if (parser.functions.TryGetValue(funcName, out LocalDictionary? func))
     {
-      data.Push(null);
-    }
+      for (int i = 0; i < func.localCount; i++)
+      {
+        data.Push(null);
+      }
 
-    return func.codeIndex;
+      return func.codeIndex;
+    }
+    else
+    {
+      throw new ApplicationException($"Unknown function name: {funcName}.");
+      //return 0;
+    }
   }
 
 
@@ -332,30 +333,6 @@ public class Compiler(string input)
     {
       case Operator.Add:
         {
-          //var operand2 = PopData();
-          //var operand1 = PopData();
-          //if (operand1 is int && operand2 is int)
-          //{
-          //  PushData((int?)operand1 + (int?)operand2);
-          //  break;
-          //}
-
-          //if (operand1 is float ||
-          //    operand2 is float ||
-          //    operand1 is double ||
-          //    operand2 is double ||
-          //    operand1 is decimal ||
-          //    operand2 is decimal ||
-          //    operand1 is int ||
-          //    operand2 is int
-          //   )
-          //{
-          //  PushData((double?)operand1 + (double?)operand2);
-          //  break;
-          //}
-
-          //PushData((string?)operand1 + (string?)operand2);
-
           op2 = PopData();
           op1 = PopData();
           PushData(op1 + op2);
@@ -431,7 +408,7 @@ public class Compiler(string input)
 
           if (op2 is string && op1 is string)
           {
-            PushData( ((string)op1).CompareTo(op2) >= 0);
+            PushData(((string)op1).CompareTo(op2) >= 0);
             break;
           }
 
@@ -465,14 +442,6 @@ public class Compiler(string input)
           op2 = PopData();
           op1 = PopData();
           PushData(op1 && op2);
-
-          //var operand1 = PopData();
-          //var operand2 = PopData();
-          //if (operand1 is bool && operand2 is bool)
-          //{
-          //  PushData((bool)operand2 && (bool)operand1);
-          //}
-
           break;
         }
       case Operator.NotEqual:
@@ -489,14 +458,6 @@ public class Compiler(string input)
           op2 = PopData();
           op1 = PopData();
           PushData(op1 || op2);
-
-          //var operand1 = PopData();
-          //var operand2 = PopData();
-          //if (operand1 is bool && operand2 is bool)
-          //{
-          //  PushData((bool)operand2 || (bool)operand1);
-          //}
-
           break;
         }
     }
