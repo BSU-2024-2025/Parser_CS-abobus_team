@@ -61,7 +61,7 @@ public class Parser(string input)
       break;
     }
 
-    if (!ParseStringLiteral(")")) throw new Exception("Expected ')'");
+    if (!ParseStringLiteral(")")) throw new ApplicationException("Expected ')'");
     func.CalcParamOffset();
 
     commandList.AddJump(currentIndex, out var command2);
@@ -145,7 +145,7 @@ public class Parser(string input)
       }
       break;
     }
-    if (!ParseStringLiteral(";")) throw new Exception("expected ';'");
+    if (!ParseStringLiteral(";")) throw new ApplicationException("expected ';'");
 
     return true;
   }
@@ -157,7 +157,7 @@ public class Parser(string input)
     if (ParseStringLiteral("("))
     {
       ParseFunctionCall(name);
-      if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+      if (!ParseStringLiteral(";")) throw new ApplicationException("Unexpected end of expression");
       commandList.AddPopStack(currentIndex); // pop returned value
       return true;
     }
@@ -174,9 +174,9 @@ public class Parser(string input)
     {
       dim++;
       commandList.AddOperator(currentIndex, "(");
-      if (!ParseExpression()) throw new Exception("Unexpected end of expression");
+      if (!ParseExpression()) throw new ApplicationException("Unexpected end of expression");
       commandList.AddOperator(currentIndex, ")");
-      if (!ParseStringLiteral("]")) throw new Exception("Unexpected end of expression");
+      if (!ParseStringLiteral("]")) throw new ApplicationException("Unexpected end of expression");
       //commandList.GetArrayGlobal(currentIndex, name);
     }
     return dim;
@@ -204,7 +204,7 @@ public class Parser(string input)
     }
     else
     {
-      if (!ParseStringLiteral(";")) throw new Exception("Unexpected end of expression");
+      if (!ParseStringLiteral(";")) throw new ApplicationException("Unexpected end of expression");
     }
 
     if (TryGetLocalVariableOffset(name, func, out var offset))
@@ -317,7 +317,7 @@ public class Parser(string input)
 
     ParseExpression();
 
-    if (!ParseStringLiteral(";")) throw new Exception($"Unexpected end of input: {GetCurrentChar()}");
+    if (!ParseStringLiteral(";")) throw new ApplicationException($"Unexpected end of input: {GetCurrentChar()}");
     commandList.AddEndExpression(currentIndex);
     commandList.AddReturn(currentIndex);
 
@@ -430,7 +430,7 @@ public class Parser(string input)
       }
       else
       {
-        throw new Exception("invalid function call");
+        throw new ApplicationException("invalid function call");
       }
     }
     commandList.AddCallFunction(currentIndex, name!);
@@ -615,9 +615,9 @@ public class Parser(string input)
 
   private void ParseBlock(bool parseVar = false)
   {
-    if (!ParseStringLiteral("{")) throw new Exception($"Expected operator's block");
+    if (!ParseStringLiteral("{")) throw new ApplicationException($"Expected operator's block");
     ParseOperators(parseVar: parseVar);
-    if (!ParseStringLiteral("}")) throw new Exception($"Unexpected end of block");
+    if (!ParseStringLiteral("}")) throw new ApplicationException($"Unexpected end of block");
   }
 
   private void Skip()

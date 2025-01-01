@@ -265,10 +265,7 @@ public class Tests
               """, ExpectedResult = 6)]
   public object? TestCompiler(string input)
   {
-    //var p = new Parser(input);
-    //var c = new Compiler(p.Parse());
-    var c = new Compiler(input);
-    return c.Compile();
+    return new Compiler(input).Compile();
   }
 
   [TestCase("""
@@ -284,18 +281,21 @@ public class Tests
               """)]
   public void BadTestCompiler(string input)
   {
-    try
-    {
-      //var p = new Parser(input);
-      //var c = new Compiler(p.Parse());
-      var c = new Compiler(input);
-      c.Compile();
-      Assert.IsFalse(true);
-    }
-    catch (Exception e)
-    {
-      Assert.IsTrue(true);
-    }
+    Assert.That(() => new Compiler(input).Compile(),
+            Throws.TypeOf<ApplicationException>() ); // .With.Message.Contains("Unknown function name: f")); 
+
+    //try
+    //{
+    //  //var p = new Parser(input);
+    //  //var c = new Compiler(p.Parse());
+    //  var c = new Compiler(input);
+    //  c.Compile();
+    //  Assert.IsFalse(true);
+    //}
+    //catch (Exception e)
+    //{
+    //  Assert.IsTrue(true);
+    //}
   }
 
   [TestCase("""
