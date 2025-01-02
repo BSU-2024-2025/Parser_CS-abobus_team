@@ -1194,6 +1194,19 @@ public class CompilationException : Exception
   }
 
   [TestCase("""
+            fun f(a, b, c = true, d = "qwe")
+            {
+              return -1;
+            }
+            return f(1); 
+            """)]
+  public void TestMissingArgumentException(string input)
+  {
+    Assert.That( () => new Compiler(input).Compile(),
+            Throws.TypeOf<ApplicationException>().With.Message.Contains("Missing argument")); 
+  }
+
+  [TestCase("""
             fun f(a)
             {
               a = a + 1;
@@ -1218,9 +1231,18 @@ public class CompilationException : Exception
 
   [TestCase("""
             t1 = getDate();
-            t2 = getDate();
+            t1 = getTicks();
+            t2 = getTicks();
             return t2 >= t1;
             """, ExpectedResult = true)]
+  [TestCase("""
+            log("------------------------------------");
+            log (1, 2);
+            log ("" + 1 + " " + 2 + " " + 3);
+            t1 = getTicks();
+            t2 = getTicks();
+            log (t1, t2, t2 - t1, (t2-t1)/10.0 + " mks." ); //TicksPerMillisecond =10,000
+            """, ExpectedResult = 0)]
   public object? TestBuiltinFunctions(string input)
   {
     return new Compiler(input).Compile();

@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using static Interpreter.Parser;
 
 namespace Interpreter;
 
@@ -265,17 +268,31 @@ public class Compiler(string input)
           i = (int)command.Value! - 1; // increment in for
           break;
         case CommandType.CallFunction:
-          PushOperator("(");
-          //int argc = (int)PeekData()!;
-          PushDefaultParams((string)command.Value!);
-          data.Push(i);
-          data.Push(funcName);
-          data.Push(bp);
-          bp = data.Count;
-          nestLevel++;
-          funcName = (string)command.Value!;
-          i = CallFunc(funcName) - 1; // increment in for
-          break;
+          { 
+            var newFuncName = (string)command.Value!;
+            if (parser.functions.TryGetValue(newFuncName, out LocalDictionary? func))
+            {
+              PushOperator("(");
+              PushDefaultParams(newFuncName);
+              data.Push(i);
+              data.Push(funcName);
+              data.Push(bp);
+              bp = data.Count;
+              nestLevel++;
+              funcName = newFuncName;
+              i = CallFunc(funcName) - 1; // increment in for
+            }
+            else
+            {
+              var builtFunc = builtinFunctions.FirstOrDefault((x) => newFuncName == x.name);
+              if (builtFunc.name == null) // builtFunc is struct!
+              {
+                throw new ApplicationException($"Unknown function name: {newFuncName}.");
+              }
+              CallBuiltFunction(builtFunc);
+            }
+            break;
+          }
         case CommandType.PopStack:
           PopData();
           break;
@@ -332,7 +349,72 @@ public class Compiler(string input)
         PushData(argc + added);
       }
     }
-   }
+  }
+
+  public readonly struct BuiltinFunction(string name, int paramCount, int? MaxParamCount = null)
+  {
+    public readonly string name = name;
+    public readonly int paramCount = paramCount;
+    public readonly int? MaxParamCount = MaxParamCount;
+  }
+
+  public static readonly BuiltinFunction[] builtinFunctions =
+  {
+     new("getDate", 0)
+    ,new("getTicks", 0)
+    ,new("log", 1, 100)
+    //,new("pause", 0, 1)
+    ,new("sin", 1)
+    ,new("sinDegree", 1)
+  };
+
+  private void CallBuiltFunction(BuiltinFunction func)
+  {
+    int argc = (int)PopData();
+
+    if (argc < func.paramCount)
+    {
+      throw new ApplicationException($"Too few arguments for {func.name}. Expected arguments count is {func.paramCount}, but was {argc}.");
+    }
+    else if (func.MaxParamCount != null && argc > func.MaxParamCount
+            || func.MaxParamCount == null && argc > func.paramCount)
+    { 
+      throw new ApplicationException($"Too many arguments for {func.name}. Max arguments count is {func.MaxParamCount??func.paramCount}, but was {argc}.");
+    }
+
+    object a(int i)
+    {
+      return data.Peek(argc - i - 1)!;
+    }
+
+    object? result = null;
+    switch (func.name) //.ToLowerInvariant()
+    {
+      case "log":
+        for (int i = 0; i < argc; i++)
+        {
+          System.Diagnostics.Trace.WriteLine(a(i)); // see in VS Output window after Debug Test (not Run Test)
+          Console.WriteLine(a(i)); // see in Test Explorer after result and Duration as Standard Output:, after Debug Test or Run Test
+        }
+        break;
+      case "getDate":
+        result = DateTime.Now.ToShortDateString();
+        break;
+      case "getTicks":
+        result = DateTime.Now.Ticks;
+        break;
+      case "sin":
+        result = Math.Sin((double)a(0));
+        break;
+      case "sinDegree":
+        result = Math.Sin((double)a(0)/180.0*Math.PI);
+        break;
+      default:
+        break;
+    };
+    PopData(argc);
+    PushData(result?? 0);
+  }
 
   private int CallFunc(string funcName)
   {
