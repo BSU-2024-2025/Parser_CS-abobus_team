@@ -375,8 +375,10 @@ public class Parser(string input)
   private bool ParseBinary()
   {
     Skip();
-    if (IsNotEnd() && GetBinaryOperator(out var op))
+    if (currentIndex + 1 < input.Length &&
+          Operator.IsBinaryOperator(input.Substring(currentIndex, 2), out var op))
     {
+      currentIndex += op.Length;
       commandList.AddOperator(currentIndex, op);
       return true;
     }
@@ -595,22 +597,6 @@ public class Parser(string input)
     currentIndex++;
   }
 
-  private bool GetBinaryOperator(out string op)
-  {
-    Skip();
-
-    if (currentIndex + 1 < input.Length &&
-        Operator.IsBinaryOperator(input.Substring(currentIndex, 2), out op))
-    {
-      currentIndex += op.Length;
-      return true;
-    }
-
-    op = Operator.Empty;
-    return false;
-  }
-
-
   private bool ParseStringLiteral(string literal)
   {
     Skip();
@@ -650,7 +636,7 @@ public class Parser(string input)
 
   private void Skip()
   {
-    while (IsNotEnd() && IsSymbol()) currentIndex++;
+    while (IsNotEnd() && IsBlankChar()) currentIndex++;
 
     if (currentIndex < input.Length - 1
         && GetCurrentChar() == '/'
@@ -670,11 +656,11 @@ public class Parser(string input)
     }
   }
 
-  private bool IsSymbol()
+  private bool IsBlankChar()
   {
-    return GetCurrentChar().ToString() switch
+    return GetCurrentChar() switch
     {
-      Symbol.Space or Symbol.Tab or Symbol.NewLine or Symbol.LineFeed => true,
+      ' ' or '\t' or '\n' or '\r' => true,
       _ => false
     };
   }
