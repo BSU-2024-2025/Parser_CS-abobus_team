@@ -7,6 +7,7 @@ public static class Operator
   public const string Multiply = "*";
   public const string Divide = "/";
   public const string Modulo = "%";
+  public const string Power = "^";
   public const string And = "&&";
   public const string Or = "||";
   public const string Not = "!";
@@ -15,7 +16,7 @@ public static class Operator
   public const string GreaterThanOrEqual = ">=";
   public const string LessThanOrEqual = "<=";
   public const string UnaryMinus = "_";
-  public const string UnaryPlus = "++";
+  public const string UnaryPlus = "p";
   public const string Equal = "==";
   public const string NotEqual = "!=";
   public const string Empty = "";
@@ -27,7 +28,7 @@ public static class Operator
   {
     switch (op[0].ToString())
     {
-      case Add or Subtract or Multiply or Divide or Modulo:
+      case Add or Subtract or Multiply or Divide or Modulo or Power:
         str = op[0].ToString();
         return true;
       case MoreThan or LessThan when op[1].ToString().Equals("="):

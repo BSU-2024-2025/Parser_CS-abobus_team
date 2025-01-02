@@ -393,7 +393,7 @@ public class Compiler(string input)
       case "log":
         for (int i = 0; i < argc; i++)
         {
-          System.Diagnostics.Trace.WriteLine(a(i)); // see in VS Output window after Debug Test (not Run Test)
+          //System.Diagnostics.Trace.WriteLine(a(i)); // see in VS Output window after run Debug Test (not Run Test)
           Console.WriteLine(a(i)); // see in Test Explorer after result and Duration as Standard Output:, after Debug Test or Run Test
         }
         break;
@@ -571,6 +571,22 @@ public class Compiler(string input)
           PushData(op1 || op2);
           break;
         }
+      case Operator.Modulo:
+        {
+
+          op2 = PopData();
+          op1 = PopData();
+          PushData(op1 % op2);
+          break;
+        }
+      case Operator.Power:
+        {
+
+          op2 = PopData();
+          op1 = PopData();
+          PushData(Math.Pow(op1, op2));
+          break;
+        }
     }
   }
 
@@ -597,8 +613,9 @@ public class Compiler(string input)
   {
     return operation switch
     {
+      Operator.Power => 500,
       Operator.Not or Operator.UnaryMinus or Operator.UnaryPlus => 400,
-      Operator.Multiply or Operator.Divide => 300,
+      Operator.Multiply or Operator.Divide or Operator.Modulo => 300,
       Operator.Add or Operator.Subtract => 100,
       Operator.LessThan or Operator.LessThanOrEqual or Operator.Equal or Operator.NotEqual
           or Operator.GreaterThanOrEqual or Operator.MoreThan => 50,

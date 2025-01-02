@@ -263,6 +263,28 @@ public class Tests
               }
               return 6;
               """, ExpectedResult = 6)]
+  [TestCase("""
+              return 10 % 5;  
+              """, ExpectedResult = 0)]
+  [TestCase("""
+              return 10 % 3;  
+              """, ExpectedResult = 1)]
+  [TestCase("""
+              return 10 ^ 0;  
+              """, ExpectedResult = 1)]
+  [TestCase("""
+              return 10 ^ 1;  
+              """, ExpectedResult = 10)]
+  [TestCase("""
+              return 10 ^ 2;  
+              """, ExpectedResult = 100)]
+  [TestCase("""
+              if (10 ^ 0.5 - 3.16227766016 < 1e-10)
+                && (10 ^ 0.5 - 3.16227766016 > (-1e-10))
+              {
+                return true;  
+              }
+              """, ExpectedResult = true)]
   public object? TestCompiler(string input)
   {
     return new Compiler(input).Compile();
@@ -1239,9 +1261,22 @@ public class CompilationException : Exception
             log("------------------------------------");
             log (1, 2);
             log ("" + 1 + " " + 2 + " " + 3);
-            t1 = getTicks();
-            t2 = getTicks();
-            log (t1, t2, t2 - t1, (t2-t1)/10.0 + " mks." ); //TicksPerMillisecond =10,000
+              t1 = getTicks();
+              t2 = getTicks();
+              log (t1, t2, //t2 - t1, 
+                 (t2-t1)/10.0 + " mks " ); //TicksPerMillisecond =10,000
+            """, ExpectedResult = 0)]
+  [TestCase("""
+            log("------------------------------------");
+            i = 0;
+            while i < 7 {
+              t1 = getTicks(); //TicksPerMillisecond =10,000
+              t2 = getTicks();
+              log ( 
+                 (t2-t1)/10.0 + " mks " 
+                 ); 
+              i = i+1;
+            }
             """, ExpectedResult = 0)]
   public object? TestBuiltinFunctions(string input)
   {

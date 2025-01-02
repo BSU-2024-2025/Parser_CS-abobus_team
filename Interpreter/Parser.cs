@@ -599,7 +599,7 @@ public class Parser(string input)
   {
     Skip();
 
-    if (IsNotEnd() && currentIndex + 1 < input.Length &&
+    if (currentIndex + 1 < input.Length &&
         Operator.IsBinaryOperator(input.Substring(currentIndex, 2), out op))
     {
       currentIndex += op.Length;
