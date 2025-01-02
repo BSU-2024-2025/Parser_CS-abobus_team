@@ -16,7 +16,7 @@ public class Compiler(string input)
   //private readonly Dictionary<string, object?> variables = new();
   //private readonly Dictionary<string, LocalDictionary> functions = new();
   private int nestLevel = 0;
-  private Parser parser = null;
+  private readonly Parser parser = new Parser(input);
 
 
   //public Compiler(List<Command> commands)
@@ -32,7 +32,7 @@ public class Compiler(string input)
 
   public object? Compile()
   {
-    parser = new Parser(input);
+    //parser = new Parser(input);
     commands.Clear();
     commands = parser.Parse();
     int bp = 0;

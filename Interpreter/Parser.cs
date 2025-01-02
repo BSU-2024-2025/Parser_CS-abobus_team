@@ -209,6 +209,10 @@ public class Parser(string input)
 
     if (isInitLocal)
     {
+      if (func == null)
+      {
+        throw new ApplicationException("Var init only for local variables");
+      }
       func.AddLocal(name);
     }
     else
@@ -216,16 +220,9 @@ public class Parser(string input)
       if (!ParseStringLiteral(";")) throw new ApplicationException("Unexpected end of expression");
     }
 
-    if (TryGetLocalVariableOffset(name, func, out var offset))
+    if (func != null && TryGetLocalVariableOffset(name, func, out var offset))
     {
-      //if (isArray)
-      //{
-      //  commandList.SetArrayLocal(currentIndex, offset);
-      //}
-      //else
-      //{
       commandList.SetLocalVariable(currentIndex, offset, dim);
-      //}
     }
     else
     {
@@ -240,15 +237,7 @@ public class Parser(string input)
           throw new ApplicationException("Cannot create global variable in the function.");
         }
       }
-
-      //if (isArray)
-      //{
-      //  commandList.SetArrayGlobal(currentIndex, name);
-      //}
-      //else
-      //{
       commandList.SetGlobalVariable(currentIndex, name, dim);
-      //}
     }
     return true;
   }
@@ -487,7 +476,7 @@ public class Parser(string input)
   {
     int dim = ParseArrayIndex();
 
-    if (TryGetLocalVariableOffset(name, func, out var offset))
+    if (func != null && TryGetLocalVariableOffset(name, func, out var offset))
     {
       commandList.GetLocalVariable(currentIndex, offset, dim);
     }
