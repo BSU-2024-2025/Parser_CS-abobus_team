@@ -1065,6 +1065,13 @@ public class CompilationException : Exception
             x = [1, 2, f()];
             return x[2];
             """, ExpectedResult = 301)]
+  [TestCase("""
+            fun f(a)
+            {
+              return a[0] + a[1] + a[2];
+            }
+            return 0 + f( [1+0,2/1,3*1] ) *2/2;
+            """, ExpectedResult = 6)]
   public object? TestArray(string input)
   {
     return new Compiler(input).Compile();
@@ -1210,6 +1217,13 @@ public class CompilationException : Exception
             }
             return f(1, 2); 
             """, ExpectedResult = "qwe")]
+  [TestCase("""
+            fun f(a, b = 22, c = true, d = "qwe")
+            {
+              return @@argc;
+            }
+            return f(100); 
+            """, ExpectedResult = 4)]
   public object? TestDefaultParam(string input)
   {
     return new Compiler(input).Compile();
