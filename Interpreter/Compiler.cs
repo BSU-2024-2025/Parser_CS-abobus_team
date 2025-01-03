@@ -13,22 +13,9 @@ public class Compiler(string input)
 
   private readonly MyStack<object?> data = new();
 
-  //private readonly Dictionary<string, object?> variables = new();
-  //private readonly Dictionary<string, LocalDictionary> functions = new();
   private int nestLevel = 0;
-  private readonly Parser parser = new Parser(input);
+  private readonly Parser parser = new(input);
 
-
-  //public Compiler(List<Command> commands)
-  //{
-  //	this.commands = commands;
-  //}
-  //
-  //public Compiler(string input)
-  //{
-  //  var p = new Parser(input);
-  //  this.commands = p.Parse();
-  //}
 
   public object? Compile()
   {
@@ -205,46 +192,22 @@ public class Compiler(string input)
             PushData(a);
             break;
           }
-        //case CommandType.SetArrayGlobal:
-        //  {
-        //    var size = (int)PopData();
-        //    var a = new ArrayList();
-        //    for (var j = 0; j < size; j++)
-        //    {
-        //      a.Add(PopData());
-        //    }
-        //    SetArrayGlobal((string)command.Value!, a);
-        //    bp = data.Count;
-        //    break;
-        //  }
-        //case CommandType.GetArrayGlobal:
-        //  {
-        //    var index = (int)PopData();
-        //    var x = (string)command.Value!;
-        //    var d = (int)GetGlobalVariable(x)!;
-        //    PushData(data.PeekByIndex(bp - d + index)!);
-        //    break;
-        //  }
         case CommandType.Return:
         case CommandType.Return0:
-          if (nestLevel == 0 && GetOperatorsLength() != 0)
-          {
-            throw new ApplicationException($"Not empty operators stack.");
-          }
-
           if (nestLevel == 0)
-          {
-            return (GetDataLength() != 0 ? PeekData() : 0) ?? 0;
+          { 
+            if (GetOperatorsLength() != 0)
+            {
+              throw new ApplicationException($"Not empty operators stack at the end of run.");
+            }
+            return (GetDataLength() > 0 ? PopData() : 0);
           }
           else
           {
-            var result = (command.CommandType == CommandType.Return0 ? 0 : data.Pop());
-
+            var result = (command.CommandType == CommandType.Return0 ? 0 : PopData());
             i = ReturnFunc(ref funcName!, ref bp, result);
             nestLevel--;
-
           }
-
           break;
 
         case CommandType.GetArgc:
@@ -257,16 +220,18 @@ public class Compiler(string input)
         case CommandType.EndExpression:
           ExecuteOperators(Operator.End);
           break;
+        
         case CommandType.If:
           if (!(bool)PopData())
           {
             i = (int)command.Value! - 1; // increment in for
           }
-
           break;
+
         case CommandType.Jump:
           i = (int)command.Value! - 1; // increment in for
           break;
+
         case CommandType.CallFunction:
           { 
             var newFuncName = (string)command.Value!;
@@ -280,7 +245,7 @@ public class Compiler(string input)
               bp = data.Count;
               nestLevel++;
               funcName = newFuncName;
-              i = CallFunc(funcName) - 1; // increment in for
+              i = CallFunc(funcName, func) - 1; // increment in for
             }
             else
             {
@@ -296,12 +261,11 @@ public class Compiler(string input)
         case CommandType.PopStack:
           PopData();
           break;
+        
         default:
           throw new ApplicationException("Unknown command type");
       }
     }
-
-
     return null;
   }
 
@@ -416,24 +380,14 @@ public class Compiler(string input)
     PushData(result?? 0);
   }
 
-  private int CallFunc(string funcName)
+  private int CallFunc(string funcName, LocalDictionary func)
   {
-    if (parser.functions.TryGetValue(funcName, out LocalDictionary? func))
+    for (int i = 0; i < func.localCount; i++)
     {
-      for (int i = 0; i < func.localCount; i++)
-      {
-        data.Push(null);
-      }
-
-      return func.codeIndex;
+      data.Push(null);
     }
-    else
-    {
-      throw new ApplicationException($"Unknown function name: {funcName}.");
-      //return 0;
-    }
+    return func.codeIndex;
   }
-
 
   private void Execute(string operation)
   {
@@ -447,7 +401,6 @@ public class Compiler(string input)
           op2 = PopData();
           op1 = PopData();
           PushData(op1 + op2);
-
           break;
         }
       case Operator.Subtract:
@@ -469,9 +422,11 @@ public class Compiler(string input)
         op1 = PopData();
         PushData(op1 / op2);
         break;
+
       case Operator.UnaryMinus:
         PushData(-(dynamic)PopData());
         break;
+
       case Operator.Not:
         {
           var operand = PopData();
@@ -484,7 +439,7 @@ public class Compiler(string input)
 
           throw new InvalidOperationException("Not supported");
         }
-      case Operator.MoreThan:
+      case Operator.More:
         {
           op2 = PopData();
           op1 = PopData();
@@ -498,7 +453,7 @@ public class Compiler(string input)
           PushData(op1 > op2);
           break;
         }
-      case Operator.LessThan:
+      case Operator.Less:
         {
           op2 = PopData();
           op1 = PopData();
@@ -512,7 +467,7 @@ public class Compiler(string input)
           PushData(op1 < op2);
           break;
         }
-      case Operator.GreaterThanOrEqual:
+      case Operator.GreaterOrEqual:
         {
           op2 = PopData();
           op1 = PopData();
@@ -526,7 +481,7 @@ public class Compiler(string input)
           PushData(op1 >= op2);
           break;
         }
-      case Operator.LessThanOrEqual:
+      case Operator.LessOrEqual:
         {
           op2 = PopData();
           op1 = PopData();
@@ -565,7 +520,6 @@ public class Compiler(string input)
         }
       case Operator.Or:
         {
-
           op2 = PopData();
           op1 = PopData();
           PushData(op1 || op2);
@@ -573,7 +527,6 @@ public class Compiler(string input)
         }
       case Operator.Modulo:
         {
-
           op2 = PopData();
           op1 = PopData();
           PushData(op1 % op2);
@@ -581,12 +534,13 @@ public class Compiler(string input)
         }
       case Operator.Power:
         {
-
           op2 = PopData();
           op1 = PopData();
           PushData(Math.Pow(op1, op2));
           break;
         }
+      default:
+        throw new ApplicationException($"Unknown operation: {operation} ."); // NotSupportedException();
     }
   }
 
@@ -617,8 +571,8 @@ public class Compiler(string input)
       Operator.Not or Operator.UnaryMinus or Operator.UnaryPlus => 400,
       Operator.Multiply or Operator.Divide or Operator.Modulo => 300,
       Operator.Add or Operator.Subtract => 100,
-      Operator.LessThan or Operator.LessThanOrEqual or Operator.Equal or Operator.NotEqual
-          or Operator.GreaterThanOrEqual or Operator.MoreThan => 50,
+      Operator.Less or Operator.LessOrEqual or Operator.Equal or Operator.NotEqual
+          or Operator.GreaterOrEqual or Operator.More => 50,
       Operator.And => 40,
       Operator.Or => 20,
       Operator.LeftParenthesis => 0,

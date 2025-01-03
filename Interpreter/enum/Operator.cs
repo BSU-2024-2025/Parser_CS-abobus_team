@@ -11,10 +11,10 @@ public static class Operator
   public const string And = "&&";
   public const string Or = "||";
   public const string Not = "!";
-  public const string MoreThan = ">";
-  public const string LessThan = "<";
-  public const string GreaterThanOrEqual = ">=";
-  public const string LessThanOrEqual = "<=";
+  public const string More = ">";
+  public const string Less = "<";
+  public const string GreaterOrEqual = ">=";
+  public const string LessOrEqual = "<=";
   public const string UnaryMinus = "_";
   public const string UnaryPlus = "p";
   public const string Equal = "==";
@@ -31,10 +31,10 @@ public static class Operator
       case Add or Subtract or Multiply or Divide or Modulo or Power:
         str = op[0].ToString();
         return true;
-      case MoreThan or LessThan when op[1].ToString().Equals("="):
+      case More or Less when op[1].ToString().Equals("="):
         str = op;
         return true;
-      case MoreThan or LessThan when !op[1].ToString().Equals("="):
+      case More or Less when !op[1].ToString().Equals("="):
         str = op[0].ToString();
         return true;
     }
