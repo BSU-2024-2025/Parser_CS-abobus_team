@@ -40,9 +40,23 @@ public class Parser(string input)
     return commandList.GetCommands();
   }
 
+  private bool ParseKeyword(string keyword)
+  {
+    var prevIndex = currentIndex;
+    if (ParseName() == keyword) // assume keyword uses identificator rules
+    {
+      return true;
+    }
+    else
+    {
+      currentIndex = prevIndex;
+      return false;
+    }
+  }
+
   private bool ParseFunction()
   {
-    if (!ParseStringLiteral("fun")) return false;
+    if (!ParseKeyword("fun")) return false;
     var name = ParseName();
     if (name == "") throw new ApplicationException("Missing function name");
 
@@ -134,7 +148,7 @@ public class Parser(string input)
 
   private bool ParseVar()
   {
-    if (!ParseStringLiteral("var")) return false;
+    if (!ParseKeyword("var")) return false;
     var name = ParseName();
 
     func = functions[funcName!];
@@ -295,7 +309,7 @@ public class Parser(string input)
 
   private bool ParseReturn()
   {
-    if (!ParseStringLiteral("return")) return false;
+    if (!ParseKeyword("return")) return false;
 
     if (ParseStringLiteral(";"))
     {
@@ -314,7 +328,7 @@ public class Parser(string input)
 
   private bool ParseIf()
   {
-    if (!ParseStringLiteral("if")) return false;
+    if (!ParseKeyword("if")) return false;
 
     ParseExpression();
     commandList.AddEndExpression(currentIndex);
@@ -323,7 +337,7 @@ public class Parser(string input)
     ParseBlock();
     command1.Value = commandList.GetCommandCount();
 
-    if (ParseStringLiteral("else"))
+    if (ParseKeyword("else"))
     {
       commandList.AddJump(currentIndex, out var command2);
       command1.Value = commandList.GetCommandCount();
@@ -411,7 +425,7 @@ public class Parser(string input)
   {
     if (!ParseStringLiteral("@@"))
       return false;
-    if (ParseStringLiteral("argc"))
+    if (ParseKeyword("argc"))
     {
       commandList.Add(currentIndex, CommandType.GetArgc);
       return true;
@@ -486,9 +500,9 @@ public class Parser(string input)
 
     if (IsNotEnd())
     {
-      if (ParseStringLiteral("true"))
+      if (ParseKeyword("true"))
         o = true;
-      else if (ParseStringLiteral("false"))
+      else if (ParseKeyword("false"))
         o = false;
       else
         prevIndex = currentIndex;
@@ -592,7 +606,7 @@ public class Parser(string input)
 
   private bool ParseWhile()
   {
-    if (!ParseStringLiteral("while")) return false;
+    if (!ParseKeyword("while")) return false;
     var i = commandList.GetCommandCount();
     ParseExpression();
     commandList.AddEndExpression(currentIndex);

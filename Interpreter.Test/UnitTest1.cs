@@ -1213,6 +1213,36 @@ public class CompilationException : Exception
   }
 
   [TestCase("""
+            whileA = 2;
+            while_2 = 3;
+            return whileA + while_2;
+            """, ExpectedResult = 5)]
+  [TestCase("""
+            funA = 2;
+            fun_2 = 3;
+              return funA + fun_2;
+            """, ExpectedResult = 5)]
+  [TestCase("""
+            varA = 2;
+            var_2 = 3;
+            return varA + var_2;
+            """, ExpectedResult = 5)]
+  [TestCase("""
+            ifA = 2;
+            if_2 = 3;
+            return ifA + if_2;
+            """, ExpectedResult = 5)]
+  [TestCase("""
+            elseA = 2;
+            else_2 = 3;
+            return elseA + else_2;
+            """, ExpectedResult = 5)]
+  public object? TestKeyword(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
             fun f(b = 22)
             {
               return b;
