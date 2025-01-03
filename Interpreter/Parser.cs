@@ -186,7 +186,6 @@ public class Parser(string input)
       if (!ParseExpression()) throw new ApplicationException("Unexpected end of index expression");
       commandList.AddOperator(currentIndex, ")");
       if (!ParseStringLiteral("]")) throw new ApplicationException("Unexpected end of index expression");
-      //commandList.GetArrayGlobal(currentIndex, name);
     }
     return dim;
   }
@@ -195,17 +194,8 @@ public class Parser(string input)
   {
     int dim = ParseArrayIndex();
     if (!ParseStringLiteral("=")) return false;
-    //var isArray = false;
-    //if (ParseStringLiteral("["))
-    //{
-    //  ParseArray(name);
-    //  isArray = true;
-    //}
-    //else
-    //{
     ParseExpression();
     commandList.AddEndExpression(currentIndex);
-    //}
 
     if (isInitLocal)
     {
@@ -277,7 +267,6 @@ public class Parser(string input)
     if (func != null)
     {
       func.TryGetValue(variable, out var local);
-      //func.Locals.TryGetValue(variable, out var local);
       if (local != null)
       {
         offset = local.offset;
@@ -323,7 +312,6 @@ public class Parser(string input)
     return true;
   }
 
-
   private bool ParseIf()
   {
     if (!ParseStringLiteral("if")) return false;
@@ -343,7 +331,6 @@ public class Parser(string input)
       {
         ParseBlock();
       }
-
       command2.Value = commandList.GetCommandCount();
     }
 
@@ -625,17 +612,18 @@ public class Parser(string input)
 
   private void Skip()
   {
-    while (IsNotEnd() && IsBlankChar()) currentIndex++;
+    while (IsNotEnd() && IsBlankChar()) 
+      currentIndex++;
 
     if (currentIndex < input.Length - 1
         && GetCurrentChar() == '/'
-        && input.Substring(currentIndex, 2).Equals("//")
+        && input[currentIndex + 1] == '/'
        )
     {
       currentIndex += 2;
       while (IsNotEnd() && GetCurrentChar() != '\n'
-                        && GetCurrentChar() != '\r'
-                        && GetCurrentChar() != '\t') currentIndex++;
+                        && GetCurrentChar() != '\r')
+        currentIndex++;
 
       if (IsNotEnd())
       {

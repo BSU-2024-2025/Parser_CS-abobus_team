@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices.ObjectiveC;
 using static Interpreter.Parser;
 
 namespace Interpreter;
@@ -594,6 +595,15 @@ public class Compiler(string input)
     return data.Pop()!;
   }
 
+  private object BigIntToInt(System.Numerics.BigInteger bigint)
+  {
+    if (bigint <= int.MaxValue && bigint >= int.MinValue)
+      return (int)bigint;
+    if (bigint <= long.MaxValue && bigint >= long.MinValue)
+      return (long)bigint;
+    return bigint;
+  }
+
   private void PopData(int size)
   {
     for (var j = 0; j < size; j++)
@@ -604,6 +614,8 @@ public class Compiler(string input)
 
   private void PushData(object data)
   {
+    if (data is System.Numerics.BigInteger bigint) 
+      data = BigIntToInt(bigint);
     this.data.Push(data);
   }
 
