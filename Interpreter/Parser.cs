@@ -474,7 +474,6 @@ public class Parser(string input)
     return true;
   }
 
-
   private bool ParseBoolean(out object? o)
   {
     Skip();

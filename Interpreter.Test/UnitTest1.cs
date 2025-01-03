@@ -986,6 +986,22 @@ public class CompilationException : Exception
                 return x[0] / 1 + x[1] * 1 + x[2];
             """, ExpectedResult = 6)]
   [TestCase("""
+                x = [1, 2, 1];
+                return len(x);
+            """, ExpectedResult = 3)]
+  [TestCase("""
+                x = [1, 2, 1];
+                return len(x) + len([3, 22]);
+            """, ExpectedResult = 5)]
+  [TestCase("""
+                x = "qwerty";
+                return len(x);
+            """, ExpectedResult = 6)]
+  [TestCase("""
+                x = "qwerty";
+                return len(x + x + x);
+            """, ExpectedResult = 6*3)]
+  [TestCase("""
                 x = [1, 2, 3];
                 return x[0*1 + 0*2] / 1 + x[(1 * 1)*1] * 1 + x[2/2 + 1/1];
             """, ExpectedResult = 6)]
@@ -1077,7 +1093,7 @@ public class CompilationException : Exception
             {
               var i = 0;
               var min = 2^32 - 1;
-              while i < 5 {
+              while i < len(a) {
                 if a[i] < min {
                    min = a[i];
                 }

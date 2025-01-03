@@ -325,7 +325,8 @@ public class Compiler(string input)
 
   public static readonly BuiltinFunction[] builtinFunctions =
   {
-     new("getDate", 0)
+     new("len", 1)
+    ,new("getDate", 0)
     ,new("getTicks", 0)
     ,new("log", 1, 100)
     //,new("pause", 0, 1)
@@ -355,6 +356,14 @@ public class Compiler(string input)
     object? result = null;
     switch (func.name) //.ToLowerInvariant()
     {
+      case "len":
+        {
+          if (a(0) is string)
+            result = a(0).ToString().Length;
+          else
+            result = ((IList)a(0)).Count;
+          break;
+        }
       case "log":
         for (int i = 0; i < argc; i++)
         {
