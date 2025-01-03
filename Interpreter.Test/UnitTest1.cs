@@ -1072,6 +1072,21 @@ public class CompilationException : Exception
             }
             return 0 + f( [1+0,2/1,3*1] ) *2/2;
             """, ExpectedResult = 6)]
+  [TestCase("""
+            fun min(a)
+            {
+              var i = 0;
+              var min = 2^32 - 1;
+              while i < 5 {
+                if a[i] < min {
+                   min = a[i];
+                }
+                i = i + 1;
+              }
+              return min;
+            }
+            return min([ 100, 200 ,3, 400, 500 ]);
+            """, ExpectedResult = 3)]
   public object? TestArray(string input)
   {
     return new Compiler(input).Compile();

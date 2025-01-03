@@ -536,7 +536,10 @@ public class Compiler(string input)
         {
           op2 = PopData();
           op1 = PopData();
-          PushData(Math.Pow(op1, op2));
+          if (op1 is int && op2 is int)
+            PushData(System.Numerics.BigInteger.Pow(op1, op2));
+          else
+            PushData(Math.Pow(op1, op2));
           break;
         }
       default:
