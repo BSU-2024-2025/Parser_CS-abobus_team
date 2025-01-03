@@ -238,7 +238,6 @@ public class Compiler(string input)
             var newFuncName = (string)command.Value!;
             if (parser.functions.TryGetValue(newFuncName, out LocalDictionary? func))
             {
-              PushOperator("(");
               PushDefaultParams(newFuncName);
               data.Push(i);
               data.Push(funcName);
@@ -388,6 +387,7 @@ public class Compiler(string input)
     };
     PopData(argc);
     PushData(result?? 0);
+    PopOperator();  // pop '('
   }
 
   private int CallFunc(string funcName, LocalDictionary func)
@@ -588,9 +588,10 @@ public class Compiler(string input)
           or Operator.GreaterOrEqual or Operator.More => 50,
       Operator.And => 40,
       Operator.Or => 20,
-      Operator.LeftParenthesis => 0,
-      Operator.End => 0,
-      _ => 0
+      Operator.LeftParenthesis => 1,
+      Operator.End => 1,
+      //Operator.CallPrepare => 0,
+      _ => -1
     };
   }
 

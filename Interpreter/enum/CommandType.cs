@@ -27,5 +27,6 @@ public enum CommandType
   SetLocalIndexed,
   GetGlobalIndexed,
   GetLocalIndexed,
-  GetArgc
+  GetArgc,
+  CallPrepare,
 }

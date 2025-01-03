@@ -422,12 +422,13 @@ public class Parser(string input)
   private bool ParseFunctionCall(string name)
   {
     int argc = 0;
+    commandList.AddOperator(currentIndex, "(");
     while (!ParseStringLiteral(")"))
     {
-      commandList.AddOperator(currentIndex, "(");
+      //commandList.AddOperator(currentIndex, "(");
       argc++;
       ParseExpression();
-      commandList.AddOperator(currentIndex, ")");
+      commandList.AddEndExpression(currentIndex); //commandList.AddOperator(currentIndex, ")");
       if (ParseStringLiteral(")")) break;
       if (ParseStringLiteral(","))
       {

@@ -22,6 +22,7 @@ public static class Operator
   public const string Empty = "";
   public const string LeftParenthesis = "(";
   public const string RightParenthesis = ")";
+  public const string CallPrepare = "f(";
   public const string End = "\n";
 
   public static bool IsBinaryOperator(string op, out string str)
