@@ -8,6 +8,12 @@ public static class Operator
   public const string Divide = "/";
   public const string Modulo = "%";
   public const string Power = "^";
+  public const string AutoAdd = "+=";
+  public const string AutoSubtract = "-=";
+  public const string AutoMultiply = "*=";
+  public const string AutoDivide = "/=";
+  public const string AutoModulo = "%=";
+  public const string AutoPower = "^=";
   public const string And = "&&";
   public const string Or = "||";
   public const string Not = "!";
