@@ -1243,6 +1243,76 @@ public class CompilationException : Exception
   }
 
   [TestCase("""
+            x = 1;
+            x += 2;
+            return x;
+            """, ExpectedResult = 3)]
+  [TestCase("""
+            x = 3;
+            x -= 2;
+            return x;
+            """, ExpectedResult = 1)]
+  [TestCase("""
+            x = 3;
+            x *= 2;
+            return x;
+            """, ExpectedResult = 6)]
+  [TestCase("""
+            x = 6;
+            x /= 2;
+            return x;
+            """, ExpectedResult = 3)]
+  [TestCase("""
+            x = 3;
+            x ^= 2;
+            return x;
+            """, ExpectedResult = 9)]
+  [TestCase("""
+            x = 2;
+            a = [1,2,3];
+            x ^= a[2];
+            return x;
+            """, ExpectedResult = 8)]
+  [TestCase("""
+            a = [1,2,3];
+            a[2] ^= 4;
+            return a[2];
+            """, ExpectedResult = 81)]
+  [TestCase("""
+            a = [1,2,3];
+            a[2] ^= a[1];
+            return a[2];
+            """, ExpectedResult = 9)]
+  [TestCase("""
+            //!
+            a = [ [1,2,3], [10,20,30] ];
+            
+            log (a[1][0]
+               , a[0][1]
+               , "--------");
+
+            a[1][0] ^= 2; //a[0][1];  //  10^=2
+
+            log (a[1][0] );
+            log (a[0][1] );
+            
+            return a[1][0];
+            """, ExpectedResult = 100)]
+  [TestCase("""
+            a = [ [1,2,3], [10,20,30] ];
+            
+            log ("len(a[0]) = ", len(a[0]));
+
+            a[1][ len(a[0]) - 3 ] ^= a[0][1];  //  10^=2
+
+            return a[1][0];
+            """, ExpectedResult = 100)]
+  public object? TestCompoundAssignment(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
             fun f(b = 22)
             {
               return b;

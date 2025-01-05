@@ -680,7 +680,7 @@ public class Compiler(string input)
     else if (dim == 1)
       (o as ArrayList)![index1] = value;
     else if (dim == 2)
-      ((o as ArrayList)![index1] as ArrayList)![index2] = value;
+      ((o as ArrayList)![index2] as ArrayList)![index1] = value;
     else
       throw new ApplicationException($"Invalid Array dimension {dim}.");
   }
