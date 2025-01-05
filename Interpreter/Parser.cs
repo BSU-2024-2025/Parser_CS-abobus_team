@@ -207,10 +207,13 @@ public class Parser(string input)
   private bool ParseAssign(string name, bool isInitLocal = false)
   {
     var prevIndex = currentIndex;
+    var isIncDec = false;
     int dim = ParseArrayIndex();
     if (!ParseStringLiteral("="))
     {
-      if (ParseStringLiteral("+=")
+      if (   ParseStringLiteral("++")
+          || ParseStringLiteral("--")
+          || ParseStringLiteral("+=")
           || ParseStringLiteral("-=")
           || ParseStringLiteral("*=")
           || ParseStringLiteral("/=")
@@ -226,14 +229,25 @@ public class Parser(string input)
           currentIndex = prevIndex;
           ParseVariable(name);
           commandList.AddOperator(currentIndex, oper);
-          currentIndex += 2;
+          if (ParseStringLiteral("++") || ParseStringLiteral("--"))
+          {
+            commandList.AddConstant(currentIndex, 1);
+            isIncDec = true;
+          }
+          else
+          {
+            currentIndex += 2;
+          }
         }
         else throw new ApplicationException("Var init uses only = .");
       }
       else
         return false;
     }
-    ParseExpression();
+    if (!isIncDec)
+    {
+      ParseExpression();
+    }
     commandList.AddEndExpression(currentIndex);
 
     if (isInitLocal)
@@ -657,7 +671,7 @@ public class Parser(string input)
     while (IsNotEnd() && IsBlankChar()) 
       currentIndex++;
 
-    if (currentIndex < input.Length - 1
+    if (currentIndex + 1 < input.Length 
         && GetCurrentChar() == '/'
         && input[currentIndex + 1] == '/'
        )

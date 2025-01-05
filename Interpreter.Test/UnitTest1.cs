@@ -1313,6 +1313,31 @@ public class CompilationException : Exception
   }
 
   [TestCase("""
+            a = 3;
+            a--;
+            return a;
+            """, ExpectedResult = 2)]
+  [TestCase("""
+            a = 3;
+            a++;
+            return a;
+            """, ExpectedResult = 4)]
+  [TestCase("""
+            a = [1,2,3];
+            a[2]++;
+            return a[2];
+            """, ExpectedResult = 4)]
+  [TestCase("""
+            a = [1,2,3];
+            a[2]--;
+            return a[2];
+            """, ExpectedResult = 2)]
+  public object? TestIncDec(string input)
+  {
+    return new Compiler(input).Compile();
+  }
+
+  [TestCase("""
             fun f(b = 22)
             {
               return b;
